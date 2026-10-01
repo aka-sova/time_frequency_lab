@@ -142,11 +142,12 @@ export default function Lab() {
           onUndo={st.doUndo}
         />
         <main className="grid lg:grid-cols-[340px_minmax(0,1fr)]">
-          <aside
-            className="order-2 border-r border-line bg-panel lg:order-1 lg:sticky lg:top-[52px] lg:h-[calc(100vh-52px)] lg:overflow-y-auto thin-scroll"
-            aria-label="Signal configuration"
-          >
-            <ControlPanel />
+          {/* On desktop the controls take the height of the plot column (absolute inner scroller),
+              so they never stretch the grid row and leave a gap under the spectrum. */}
+          <aside className="relative order-2 border-r border-line bg-panel lg:order-1" aria-label="Signal configuration">
+            <div className="thin-scroll lg:absolute lg:inset-0 lg:overflow-y-auto">
+              <ControlPanel />
+            </div>
           </aside>
           <section className="order-1 min-w-0 lg:order-2" aria-label="Visualization">
             <StatusBar explanation={st.explanation} onDismiss={() => st.setExplanation(null)} warnings={warnings} onFix={onFix} />
