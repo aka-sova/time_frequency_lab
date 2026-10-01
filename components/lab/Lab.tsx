@@ -15,6 +15,7 @@ import CursorReadout from '@/components/measurements/CursorReadout';
 import StatusBar from '@/components/education/StatusBar';
 import Workspace from '@/components/workspace/Workspace';
 import ErrorBoundary from '@/components/layout/ErrorBoundary';
+import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import { generateSignal } from '@/lib/dsp/signals';
 import { computeMeasurements, computeSpectra } from '@/lib/dsp/analyze';
 import { collectWarnings, type LabWarning } from '@/lib/dsp/warnings';
@@ -40,7 +41,7 @@ function useAnalysis(exp: Experiment | null) {
   return { signal, spectra, measurements };
 }
 
-export default function Lab() {
+function LabInner() {
   const st = useLabState();
   const { exp, api } = st;
   const { signal, spectra, measurements } = useAnalysis(exp);
@@ -201,5 +202,13 @@ export default function Lab() {
         </footer>
       </div>
     </LabContext.Provider>
+  );
+}
+
+export default function Lab() {
+  return (
+    <ThemeProvider>
+      <LabInner />
+    </ThemeProvider>
   );
 }

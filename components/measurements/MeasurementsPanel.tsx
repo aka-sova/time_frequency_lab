@@ -11,7 +11,8 @@ import { setPath } from '@/lib/state/path';
 import { useLab } from '@/components/lab/context';
 import Tex from '@/components/education/Tex';
 import Plot from '@/components/plots/Plot';
-import { C, axis, baseLayout } from '@/components/plots/theme';
+import { axis, baseLayout } from '@/components/plots/theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 
 function bandText(b: Band): string {
   if (!b.valid) return b.note ? `— (${b.note})` : '—';
@@ -53,6 +54,7 @@ function Row({ k, v, sub }: { k: React.ReactNode; v: React.ReactNode; sub?: Reac
 }
 
 function PulseWidthMiniChart() {
+  const C = usePalette();
   const lab = useLab();
   const exp = useDeferredValue(lab.exp);
   const res = useMemo(() => {
@@ -86,7 +88,7 @@ function PulseWidthMiniChart() {
     <>
       <Plot
         data={data}
-        layout={baseLayout({ margin: { l: 52, r: 10, t: 6, b: 36 }, xaxis: axis('τ (ns)', { type: 'log' }), yaxis: axis('B₋₃dB (MHz)', { type: 'log' }), legend: { orientation: 'h', y: -0.35, x: 0, font: { size: 10, color: C.ink2 } } })}
+        layout={baseLayout(C, { margin: { l: 52, r: 10, t: 6, b: 36 }, xaxis: axis(C, 'τ (ns)', { type: 'log' }), yaxis: axis(C, 'B₋₃dB (MHz)', { type: 'log' }), legend: { orientation: 'h', y: -0.35, x: 0, font: { size: 10, color: C.ink2 } } })}
         height={210}
         ariaLabel="Pulse width versus bandwidth for nearby pulse widths"
         filename="tau-vs-bandwidth"

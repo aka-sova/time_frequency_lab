@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { ChevronDown, Crosshair, RotateCcw } from 'lucide-react';
 import type { UiMode } from '@/types/signal';
 import { allowed, useLab, type SectionKey } from '@/components/lab/context';
@@ -8,8 +8,12 @@ import type { IsolateKey } from '@/lib/presets/isolate';
 import { ISOLATE_LABELS } from '@/lib/presets/isolate';
 import { getPath } from '@/lib/state/path';
 
+export type SectionColor = 'signal' | 'carrier' | 'pulse' | 'train' | 'coherence' | 'jitter' | 'chirp' | 'modulation' | 'sampling';
+
 interface SectionProps {
   title: string;
+  /** Identity hue of the section (left stripe, tinted header/body, slider thumbs). */
+  color: SectionColor;
   level?: UiMode;
   defaultOpen?: boolean;
   resetKey?: SectionKey;
@@ -19,15 +23,18 @@ interface SectionProps {
   children: ReactNode;
 }
 
-export default function Section({ title, level = 'basic', defaultOpen = true, resetKey, isolateKeys, enablePath, badge, children }: SectionProps) {
+export default function Section({ title, color, level = 'basic', defaultOpen = true, resetKey, isolateKeys, enablePath, badge, children }: SectionProps) {
   const lab = useLab();
   const [open, setOpen] = useState(defaultOpen);
   if (!allowed(lab.mode, level)) return null;
   const enabled = enablePath ? Boolean(getPath(lab.exp, enablePath)) : true;
   const bodyId = `sec-${title.replace(/\W+/g, '-').toLowerCase()}`;
   return (
-    <section className="border-b border-line">
-      <div className="flex items-center gap-1 px-3 py-1.5">
+    <section
+      className="border-b border-l-[3px] border-b-line border-l-[color:var(--sec)] bg-[color-mix(in_oklab,var(--sec)_4%,transparent)]"
+      style={{ '--sec': `var(--color-sec-${color})`, '--slider-thumb': 'var(--sec)' } as CSSProperties}
+    >
+      <div className="flex items-center gap-1 bg-[color-mix(in_oklab,var(--sec)_13%,transparent)] px-3 py-1.5">
         <button
           type="button"
           onClick={() => setOpen(!open)}
@@ -35,7 +42,8 @@ export default function Section({ title, level = 'basic', defaultOpen = true, re
           aria-controls={bodyId}
           className="flex flex-1 items-center gap-1.5 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-2 hover:text-ink"
         >
-          <ChevronDown size={13} className={`transition-transform ${open ? '' : '-rotate-90'}`} aria-hidden />
+          <ChevronDown size={13} className={`text-[color:var(--sec)] transition-transform ${open ? '' : '-rotate-90'}`} aria-hidden />
+          <span className="h-2 w-2 shrink-0 rounded-[2px] bg-[color:var(--sec)]" aria-hidden />
           {title}
           {badge}
         </button>
@@ -64,7 +72,7 @@ export default function Section({ title, level = 'basic', defaultOpen = true, re
         ) : null}
       </div>
       {open ? (
-        <div id={bodyId} className={`px-3 pb-2 ${enabled ? '' : 'opacity-60'}`}>
+        <div id={bodyId} className={`px-3 pb-2 pt-1 ${enabled ? '' : 'opacity-60'}`}>
           {isolateKeys && allowed(lab.mode, 'basic') ? (
             <div className="mb-1 flex flex-wrap gap-1">
               {isolateKeys.map((k) => (

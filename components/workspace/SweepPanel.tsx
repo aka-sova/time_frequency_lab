@@ -8,7 +8,8 @@ import { formatEngineering, formatNumber, parseEngineering } from '@/lib/units/f
 import { useLab } from '@/components/lab/context';
 import { SmallButton } from '@/components/controls/primitives';
 import Plot from '@/components/plots/Plot';
-import { C, axis, baseLayout } from '@/components/plots/theme';
+import { axis, baseLayout } from '@/components/plots/theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 
 function parseValue(t: string, unit: string): number {
   const v = unit === 's' || unit === 'Hz' ? parseEngineering(t, unit) : Number(t.replace(',', '.'));
@@ -27,6 +28,7 @@ function fmt(v: number, unit: string) {
 }
 
 export default function SweepPanel() {
+  const C = usePalette();
   const lab = useLab();
   const [paramId, setParamId] = useState('pw');
   const param = SWEEP_PARAMETERS.find((p) => p.id === paramId)!;
@@ -80,17 +82,17 @@ export default function SweepPanel() {
     return (
       <Plot
         data={data}
-        layout={baseLayout({
+        layout={baseLayout(C, {
           margin: { l: 64, r: 12, t: 8, b: 40 },
-          xaxis: axis(`${p.label} (${p.unit || '—'})`, { type: logAxes ? 'log' : 'linear', exponentformat: 'SI' }),
-          yaxis: axis(`${metricInfo.label}${metricInfo.unit ? ` (${metricInfo.unit})` : ''}`, { type: logAxes && y.every((v) => v > 0) ? 'log' : 'linear', exponentformat: 'SI' }),
+          xaxis: axis(C, `${p.label} (${p.unit || '—'})`, { type: logAxes ? 'log' : 'linear', exponentformat: 'SI' }),
+          yaxis: axis(C, `${metricInfo.label}${metricInfo.unit ? ` (${metricInfo.unit})` : ''}`, { type: logAxes && y.every((v) => v > 0) ? 'log' : 'linear', exponentformat: 'SI' }),
         })}
         height={300}
         ariaLabel="Parameter sweep result"
         filename="sweep"
       />
     );
-  }, [result, metric, metricInfo, log]);
+  }, [result, metric, metricInfo, log, C]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
@@ -133,7 +135,7 @@ export default function SweepPanel() {
           <input type="range" min={3} max={40} value={steps} onChange={(e) => setSteps(Number(e.target.value))} className="w-full" />
         </label>
         <label className="flex items-center gap-1.5 text-ink-2">
-          <input type="checkbox" checked={log} onChange={() => setLog(!log)} className="h-3 w-3 accent-[#3987e5]" /> Logarithmic spacing
+          <input type="checkbox" checked={log} onChange={() => setLog(!log)} className="h-3 w-3 accent-accent" /> Logarithmic spacing
         </label>
         <label className="block">
           <span className="text-ink-2">Plotted metric</span>

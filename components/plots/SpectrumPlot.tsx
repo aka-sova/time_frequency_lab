@@ -11,7 +11,8 @@ import { aliasFrequency } from '@/lib/dsp/sampling';
 import { FREQ_UNITS, chooseUnit, formatEngineering, formatNumber, formatPhase } from '@/lib/units/format';
 import { useLab } from '@/components/lab/context';
 import Plot, { type RelayoutEvent } from './Plot';
-import { C, axis, baseLayout } from './theme';
+import { axis, baseLayout } from './theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 
 const MAX_POINTS = 5000;
 
@@ -33,6 +34,7 @@ export function unitLabels(amplitudeUnit: 'normalized' | 'V') {
 }
 
 export default function SpectrumPlot({ signal, spectra, measurements: m, compare, height }: Props) {
+  const C = usePalette();
   const lab = useLab();
   const a = lab.exp.analysis;
   const sp = a.spectrum;
@@ -115,7 +117,7 @@ export default function SpectrumPlot({ signal, spectra, measurements: m, compare
           text: `${label}${m.single ? ' (pulse)' : ''}: ${formatEngineering(b.width, 'Hz')}`,
           showarrow: false,
           font: { size: 10, color: C.ink2 },
-          bgcolor: 'rgba(20,20,19,0.7)',
+          bgcolor: C.labelBg,
         });
       }
     }
@@ -126,7 +128,7 @@ export default function SpectrumPlot({ signal, spectra, measurements: m, compare
         if (f >= lo && f <= hi) ann.push({ x: sx(f), y: 1, xref: 'x', yref: 'paper', yanchor: 'bottom', text: two && !sp.centered ? 'fₛ/2' : f < 0 ? '−f_N' : 'f_N = fₛ/2', showarrow: false, font: { size: 10, color: C.ink2 } });
       }
       if (!two && hi > nyq)
-        shapes.push({ type: 'rect', xref: 'x', yref: 'paper', x0: sx(nyq), x1: sx(hi), y0: 0, y1: 1, fillcolor: 'rgba(255,255,255,0.03)', line: { width: 0 }, layer: 'below', editable: false } as Partial<Shape>);
+        shapes.push({ type: 'rect', xref: 'x', yref: 'paper', x0: sx(nyq), x1: sx(hi), y0: 0, y1: 1, fillcolor: C.beyondNyquist, line: { width: 0 }, layer: 'below', editable: false } as Partial<Shape>);
     }
 
     // Physical (pre-sampling) spectrum
@@ -247,15 +249,15 @@ export default function SpectrumPlot({ signal, spectra, measurements: m, compare
     const toAxis = (x: number) => (logX ? Math.log10(Math.max(x, 1e-30) / s) : x / s);
     const xr: [number, number] | undefined = range.mode === 'manual' || logX ? [toAxis(logX ? Math.max(fLo, base.binSpacing) : fLo), toAxis(fHi)] : undefined;
     const yr: [number, number] | undefined = isDb ? [floorAbs, (sp.display === 'db' ? 0 : yPeak) + 4] : undefined;
-    const lay: Partial<Layout> = baseLayout({
+    const lay: Partial<Layout> = baseLayout(C, {
       uirevision: revision,
-      xaxis: axis(`f (${unit.label})`, { type: logX ? 'log' : 'linear', ...(xr ? { range: xr, autorange: false } : { autorange: true }) }),
-      yaxis: axis(view.yLabel, yr ? { range: yr, autorange: false } : { autorange: true, rangemode: sp.display === 'normalized' || sp.display === 'magnitude' ? 'tozero' : 'normal' }),
+      xaxis: axis(C, `f (${unit.label})`, { type: logX ? 'log' : 'linear', ...(xr ? { range: xr, autorange: false } : { autorange: true }) }),
+      yaxis: axis(C, view.yLabel, yr ? { range: yr, autorange: false } : { autorange: true, rangemode: sp.display === 'normalized' || sp.display === 'magnitude' ? 'tozero' : 'normal' }),
       shapes,
       annotations: ann,
     });
     return { data: traces, layout: lay };
-  }, [signal, spectra, m, compare, lo, hi, unit, revision, sp, cfg.pulse.enabled, cfg.repetition.prfHz, cursors, units, nyq, two, logX, fLo, fHi, range.mode, train, a.phaseUnit]);
+  }, [signal, spectra, m, compare, lo, hi, unit, revision, sp, cfg.pulse.enabled, cfg.repetition.prfHz, cursors, units, nyq, two, logX, fLo, fHi, range.mode, train, a.phaseUnit, C]);
 
   const onRelayout = (e: RelayoutEvent) => {
     const s = unit.scale;

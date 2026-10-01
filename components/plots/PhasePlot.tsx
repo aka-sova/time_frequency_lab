@@ -10,10 +10,12 @@ import { phaseAt, unwrapPhase } from '@/lib/dsp/spectrum';
 import { FREQ_UNITS, chooseUnit } from '@/lib/units/format';
 import { useLab } from '@/components/lab/context';
 import Plot from './Plot';
-import { C, axis, baseLayout } from './theme';
+import { axis, baseLayout } from './theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 
 /** Phase spectrum ∠X(f), masked where |X| is below the display floor (phase of noise is meaningless). */
 export default function PhasePlot({ signal, spectra, height }: { signal: SignalResult; spectra: Spectra; height: number }) {
+  const C = usePalette();
   const lab = useLab();
   const a = lab.exp.analysis;
   const sp = a.spectrum;
@@ -54,13 +56,13 @@ export default function PhasePlot({ signal, spectra, height }: { signal: SignalR
         hovertemplate: `f = %{x:.6g} ${unit.label}<br>phase = %{y:.4g}${deg ? '°' : ' rad'}<extra></extra>`,
       },
     ];
-    const lay: Partial<Layout> = baseLayout({
+    const lay: Partial<Layout> = baseLayout(C, {
       uirevision: `${fLo}:${fHi}:${sp.phaseUnwrap}:${deg}`,
-      xaxis: axis(`f (${unit.label})`, { range: [fLo / unit.scale, fHi / unit.scale], autorange: false }),
-      yaxis: axis(`∠X (${deg ? 'deg' : 'rad'})`, sp.phaseUnwrap ? { autorange: true } : { range: deg ? [-190, 190] : [-3.3, 3.3], autorange: false, dtick: deg ? 90 : Math.PI / 2 }),
+      xaxis: axis(C, `f (${unit.label})`, { range: [fLo / unit.scale, fHi / unit.scale], autorange: false }),
+      yaxis: axis(C, `∠X (${deg ? 'deg' : 'rad'})`, sp.phaseUnwrap ? { autorange: true } : { range: deg ? [-190, 190] : [-3.3, 3.3], autorange: false, dtick: deg ? 90 : Math.PI / 2 }),
     });
     return { data: traces, layout: lay };
-  }, [spectra, sp, fLo, fHi, unit, deg, signal, lab.exp.signal.pulse.enabled]);
+  }, [spectra, sp, fLo, fHi, unit, deg, signal, lab.exp.signal.pulse.enabled, C]);
 
   return <Plot data={data} layout={layout} height={height} ariaLabel="Phase spectrum" filename="phase" />;
 }

@@ -7,7 +7,8 @@ import { indexRange, minMaxIndices, pick } from '@/lib/dsp/decimate';
 import { TIME_UNITS, chooseUnit, formatEngineering } from '@/lib/units/format';
 import { useLab } from '@/components/lab/context';
 import Plot, { type RelayoutEvent } from './Plot';
-import { C, axis, baseLayout } from './theme';
+import { axis, baseLayout } from './theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 
 const MAX_POINTS = 4000;
 
@@ -23,6 +24,7 @@ function num(e: RelayoutEvent, k: string): number | undefined {
 }
 
 export default function TimePlot({ signal, compare, height }: Props) {
+  const C = usePalette();
   const lab = useLab();
   const a = lab.exp.analysis;
   const cfg = lab.exp.signal;
@@ -171,7 +173,7 @@ export default function TimePlot({ signal, compare, height }: Props) {
           x1: Math.max(cursors.t1, cursors.t2) / s,
           y0: 0,
           y1: 1,
-          fillcolor: 'rgba(201,133,0,0.08)',
+          fillcolor: C.selection,
           line: { width: 0 },
           layer: 'below',
           editable: false,
@@ -207,15 +209,15 @@ export default function TimePlot({ signal, compare, height }: Props) {
     }
 
     const xr: [number, number] | undefined = range.mode === 'manual' ? [range.min / s, range.max / s] : undefined;
-    const lay: Partial<Layout> = baseLayout({
+    const lay: Partial<Layout> = baseLayout(C, {
       uirevision: revision,
-      xaxis: axis(`t (${unit.label})`, xr ? { range: xr, autorange: false } : { autorange: true }),
-      yaxis: axis(`x(t) (${ampUnit})`, { domain: showInst ? [0.36, 1] : [0, 1] }),
-      ...(showInst ? { yaxis2: axis('f_inst', { domain: [0, 0.26], anchor: 'x' }) } : {}),
+      xaxis: axis(C, `t (${unit.label})`, xr ? { range: xr, autorange: false } : { autorange: true }),
+      yaxis: axis(C, `x(t) (${ampUnit})`, { domain: showInst ? [0.36, 1] : [0, 1] }),
+      ...(showInst ? { yaxis2: axis(C, 'f_inst', { domain: [0, 0.26], anchor: 'x' }) } : {}),
       shapes,
     });
     return { data: traces, layout: lay };
-  }, [signal, compare, lo, hi, unit, revision, range, a.time, a.spectrum.fftSelection, cfg.sampling.aliasingDemo, cfg.pulse.enabled, cfg.am.enabled, cursors, showInst, ampUnit]);
+  }, [signal, compare, lo, hi, unit, revision, range, a.time, a.spectrum.fftSelection, cfg.sampling.aliasingDemo, cfg.pulse.enabled, cfg.am.enabled, cursors, showInst, ampUnit, C]);
 
   const onRelayout = (e: RelayoutEvent) => {
     const s = unit.scale;

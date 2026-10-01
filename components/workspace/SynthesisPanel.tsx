@@ -5,13 +5,15 @@ import type { Data } from 'plotly.js-dist-min';
 import { synthesize, type SynthesisTarget } from '@/lib/dsp/synthesis';
 import { Segmented } from '@/components/controls/primitives';
 import Plot from '@/components/plots/Plot';
-import { C, axis, baseLayout } from '@/components/plots/theme';
+import { axis, baseLayout } from '@/components/plots/theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 import { formatNumber } from '@/lib/units/format';
 
 const COUNTS = [1, 3, 5, 10, 20, 50, 100];
 
 /** Fourier synthesis: a localized pulse emerges from many in-phase components. */
 export default function SynthesisPanel() {
+  const C = usePalette();
   const [target, setTarget] = useState<SynthesisTarget>('rect');
   const [width, setWidth] = useState(0.1);
   const [k, setK] = useState(10);
@@ -29,7 +31,7 @@ export default function SynthesisPanel() {
       name: i === 0 ? `Components k = 1…${r.components.length} (offset by c₀)` : `k = ${i + 1}`,
       showlegend: i === 0,
       legendgroup: 'comp',
-      line: { color: 'rgba(154,152,144,0.45)', width: 1 },
+      line: { color: C.component, width: 1 },
       hoverinfo: 'skip',
     }),
   );
@@ -90,10 +92,10 @@ export default function SynthesisPanel() {
           </div>
         </div>
         <label className="flex items-center gap-1.5 text-ink-2">
-          <input type="checkbox" checked={showComp} onChange={() => setShowComp(!showComp)} className="h-3 w-3 accent-[#3987e5]" /> Show individual components (first 8)
+          <input type="checkbox" checked={showComp} onChange={() => setShowComp(!showComp)} className="h-3 w-3 accent-accent" /> Show individual components (first 8)
         </label>
         <label className="flex items-center gap-1.5 text-ink-2">
-          <input type="checkbox" checked={random} onChange={() => setRandom(!random)} className="h-3 w-3 accent-[#3987e5]" /> Randomize component phases
+          <input type="checkbox" checked={random} onChange={() => setRandom(!random)} className="h-3 w-3 accent-accent" /> Randomize component phases
         </label>
         <div className="rounded-sm border border-line bg-surface p-2 text-ink-2">
           {random ? (
@@ -106,14 +108,14 @@ export default function SynthesisPanel() {
       <div className="min-w-0">
         <Plot
           data={data}
-          layout={baseLayout({ margin: { l: 50, r: 12, t: 30, b: 40 }, xaxis: axis('t / T'), yaxis: axis('amplitude') })}
+          layout={baseLayout(C, { margin: { l: 50, r: 12, t: 30, b: 40 }, xaxis: axis(C, 't / T'), yaxis: axis(C, 'amplitude') })}
           height={290}
           ariaLabel="Fourier synthesis of a pulse"
           filename="fourier-synthesis"
         />
         <Plot
           data={spec}
-          layout={baseLayout({ showlegend: false, margin: { l: 50, r: 12, t: 6, b: 40 }, xaxis: axis('harmonic k (frequency k/T)'), yaxis: axis('|c_k|'), bargap: 0.25 })}
+          layout={baseLayout(C, { showlegend: false, margin: { l: 50, r: 12, t: 6, b: 40 }, xaxis: axis(C, 'harmonic k (frequency k/T)'), yaxis: axis(C, '|c_k|'), bargap: 0.25 })}
           height={160}
           ariaLabel="Fourier series coefficient magnitudes"
           filename="fourier-coefficients"

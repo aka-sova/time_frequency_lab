@@ -14,7 +14,7 @@ function Check({ label, path, tip }: { label: string; path: string; tip?: string
   const v = path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)[k], lab.exp) as boolean;
   return (
     <label className="relative inline-flex cursor-pointer items-center gap-1 text-[11.5px] text-ink-2">
-      <input type="checkbox" checked={v} onChange={() => lab.update(path, !v)} className="h-3 w-3 accent-[#3987e5]" />
+      <input type="checkbox" checked={v} onChange={() => lab.update(path, !v)} className="h-3 w-3 accent-accent" />
       {label}
       {tip ? <InfoTip tip={tip} label={label} /> : null}
     </label>
@@ -125,7 +125,7 @@ export function SpectrumToolbar({ m }: { m: Measurements }) {
             type="checkbox"
             checked={sp.dbFloor <= -100}
             onChange={() => lab.update('analysis.spectrum.dbFloor', sp.dbFloor <= -100 ? -60 : -100)}
-            className="h-3 w-3 accent-[#3987e5]"
+            className="h-3 w-3 accent-accent"
           />
           Show theoretical tails
         </label>

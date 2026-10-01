@@ -7,13 +7,16 @@ import { measureWindow, toneSpectrum } from '@/lib/dsp/leakage';
 import { ANALYSIS_WINDOWS } from '@/lib/dsp/windows';
 import { formatNumber } from '@/lib/units/format';
 import Plot from '@/components/plots/Plot';
-import { C, axis, baseLayout } from '@/components/plots/theme';
+import { axis, baseLayout, type Palette } from '@/components/plots/theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 import Tex from '@/components/education/Tex';
 
 const COMPARE: AnalysisWindow[] = ['rect', 'hann', 'hamming', 'blackman'];
-const COLORS: Record<string, string> = { rect: C.signal, hann: C.envelope, hamming: C.reference, blackman: C.extra, 'blackman-harris': C.compare, flattop: C.cursor };
+const windowColors = (C: Palette): Record<string, string> => ({ rect: C.signal, hann: C.envelope, hamming: C.reference, blackman: C.extra, 'blackman-harris': C.compare, flattop: C.cursor });
 
 export default function LeakagePanel() {
+  const C = usePalette();
+  const COLORS = windowColors(C);
   const [n, setN] = useState(64);
   const [bin, setBin] = useState(10.5);
   const [pad, setPad] = useState(16);
@@ -101,7 +104,7 @@ export default function LeakagePanel() {
                   type="checkbox"
                   checked={selected.includes(w.id)}
                   onChange={() => setSelected(selected.includes(w.id) ? selected.filter((x) => x !== w.id) : [...selected, w.id])}
-                  className="h-3 w-3 accent-[#3987e5]"
+                  className="h-3 w-3 accent-accent"
                 />
                 <span className="inline-block h-0.5 w-3" style={{ background: COLORS[w.id] }} aria-hidden />
                 {w.label}
@@ -110,7 +113,7 @@ export default function LeakagePanel() {
           </div>
         </fieldset>
         <label className="flex items-center gap-1.5 text-ink-2">
-          <input type="checkbox" checked={showRaw} onChange={() => setShowRaw(!showRaw)} className="h-3 w-3 accent-[#3987e5]" /> Show N-point DFT bins
+          <input type="checkbox" checked={showRaw} onChange={() => setShowRaw(!showRaw)} className="h-3 w-3 accent-accent" /> Show N-point DFT bins
         </label>
         <div className="rounded-sm border border-line bg-surface p-2 text-ink-2">
           Narrow main lobe ↔ larger sidelobes.
@@ -125,10 +128,10 @@ export default function LeakagePanel() {
       <div className="min-w-0">
         <Plot
           data={data}
-          layout={baseLayout({
+          layout={baseLayout(C, {
             margin: { l: 56, r: 12, t: 30, b: 40 },
-            xaxis: axis('frequency (DFT bins = cycles per record)', { range: [Math.max(0, bin - 12), bin + 12], autorange: false }),
-            yaxis: axis('dB re bin-centered tone', { range: [-120, 5], autorange: false }),
+            xaxis: axis(C, 'frequency (DFT bins = cycles per record)', { range: [Math.max(0, bin - 12), bin + 12], autorange: false }),
+            yaxis: axis(C, 'dB re bin-centered tone', { range: [-120, 5], autorange: false }),
           })}
           height={330}
           ariaLabel="Spectral leakage comparison of windows"

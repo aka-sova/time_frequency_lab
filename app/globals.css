@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
-@theme {
+/* `static` keeps every token emitted so the light-theme overrides below always apply. */
+@theme static {
   --color-bg: #0d0d0d;
   --color-panel: #141413;
   --color-surface: #1a1a19;
@@ -28,6 +29,51 @@
 
 :root {
   color-scheme: dark;
+  /* Control-panel section identities (UI grouping, not data series) */
+  --color-sec-signal: #6da7ec;
+  --color-sec-carrier: #e07a4a;
+  --color-sec-pulse: #2bb38a;
+  --color-sec-train: #d69a1a;
+  --color-sec-coherence: #df6e98;
+  --color-sec-jitter: #e66767;
+  --color-sec-chirp: #9d93ef;
+  --color-sec-modulation: #5aae4a;
+  --color-sec-sampling: #33b5c4;
+}
+
+/* Light theme: same roles, steps chosen for a light surface. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f9f9f7;
+  --color-panel: #f3f2ee;
+  --color-surface: #fcfcfb;
+  --color-raised: #ffffff;
+  --color-line: #e1e0d9;
+  --color-line-strong: #c3c2b7;
+  --color-ink: #0b0b0b;
+  --color-ink-2: #45443f;
+  --color-muted: #6b6964;
+  --color-accent: #2a78d6;
+  --color-accent-strong: #1c5cab;
+  --color-good: #006300;
+  --color-warn: #a86c00;
+  --color-serious: #c4552a;
+  --color-critical: #c03030;
+  --color-s1: #2a78d6;
+  --color-s2: #eb6834;
+  --color-s3: #1baf7a;
+  --color-s4: #eda100;
+  --color-s5: #d4568a;
+  --color-s7: #4a3aa7;
+  --color-sec-signal: #2a78d6;
+  --color-sec-carrier: #d9581f;
+  --color-sec-pulse: #12936a;
+  --color-sec-train: #b98300;
+  --color-sec-coherence: #c9407a;
+  --color-sec-jitter: #d03b3b;
+  --color-sec-chirp: #4a3aa7;
+  --color-sec-modulation: #2e7d32;
+  --color-sec-sampling: #0f8a99;
 }
 
 html,
@@ -71,14 +117,14 @@ input[type='range']::-webkit-slider-thumb {
   height: 12px;
   margin-top: -4.5px;
   border-radius: 50%;
-  background: var(--color-ink-2);
+  background: var(--slider-thumb, var(--color-ink-2));
   border: 2px solid var(--color-surface);
 }
 input[type='range']::-moz-range-thumb {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--color-ink-2);
+  background: var(--slider-thumb, var(--color-ink-2));
   border: 2px solid var(--color-surface);
 }
 input[type='range']:focus-visible {

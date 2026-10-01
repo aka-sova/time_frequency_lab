@@ -15,11 +15,12 @@ import { allowed, useLab } from '@/components/lab/context';
 import { Gate, NumberField, Segmented, SelectField, ToggleField, EngineeringInput } from '@/components/controls/primitives';
 import Tex from '@/components/education/Tex';
 import Plot from './Plot';
-import { C, HEATMAP_SCALE, axis, baseLayout } from './theme';
+import { axis, baseLayout, type Palette } from './theme';
+import { usePalette } from '@/components/layout/ThemeProvider';
 
 const WINDOW_LENGTHS = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
 
-function heatmap(times: number[], freqs: number[], z: number[][], ts: number, fs: number, dbRange: number, name: string): Data {
+function heatmap(C: Palette, times: number[], freqs: number[], z: number[][], ts: number, fs: number, dbRange: number, name: string): Data {
   return {
     type: 'heatmap',
     x: times.map((t) => t / ts),
@@ -27,7 +28,7 @@ function heatmap(times: number[], freqs: number[], z: number[][], ts: number, fs
     z,
     zmin: -dbRange,
     zmax: 0,
-    colorscale: HEATMAP_SCALE,
+    colorscale: C.heatmap,
     name,
     zsmooth: 'best',
     colorbar: { title: { text: 'dB', side: 'right', font: { size: 10, color: C.ink2 } }, thickness: 10, tickfont: { size: 9, color: C.muted }, outlinewidth: 0, len: 0.9 },
@@ -36,6 +37,7 @@ function heatmap(times: number[], freqs: number[], z: number[][], ts: number, fs
 }
 
 export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { signal: SignalResult; spectra: Spectra }) {
+  const C = usePalette();
   const lab = useLab();
   // Defer the signal and its settings together so they always belong to the same render.
   const live = useMemo(() => ({ signal: liveSignal, exp: lab.exp }), [liveSignal, lab.exp]);
@@ -84,15 +86,15 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
       connectgaps: false,
       hoverinfo: 'skip',
     };
-  }, [signal, a.stft.showInstFreq, a.time.showInstFreq, tLo, tHi, tu, fu]);
+  }, [signal, a.stft.showInstFreq, a.time.showInstFreq, tLo, tHi, tu, fu, C]);
 
   const tfLayout = (yTitle: string, logY: boolean, yRange: [number, number]): Partial<Layout> =>
-    baseLayout({
+    baseLayout(C, {
       showlegend: false,
       uirevision: `${tLo}:${tHi}:${yRange.join(':')}:${logY}`,
       margin: { l: 56, r: 10, t: 8, b: 38 },
-      xaxis: axis(`t (${tu.label})`, { range: [tLo / tu.scale, tHi / tu.scale], autorange: false }),
-      yaxis: axis(yTitle, logY ? { type: 'log', range: [Math.log10(Math.max(yRange[0], 1e-30)), Math.log10(Math.max(yRange[1], 1e-30))], autorange: false } : { range: yRange, autorange: false }),
+      xaxis: axis(C, `t (${tu.label})`, { range: [tLo / tu.scale, tHi / tu.scale], autorange: false }),
+      yaxis: axis(C, yTitle, logY ? { type: 'log', range: [Math.log10(Math.max(yRange[0], 1e-30)), Math.log10(Math.max(yRange[1], 1e-30))], autorange: false } : { range: yRange, autorange: false }),
       shapes:
         fMaxView >= nyq * 0.98
           ? [{ type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: nyq / fu.scale, y1: nyq / fu.scale, line: { color: C.muted, dash: 'dash', width: 1 } }]
@@ -101,7 +103,7 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
 
   const stftPlot = stft ? (
     <Plot
-      data={[heatmap(stft.times, stft.freqs, stft.db, tu.scale, fu.scale, a.stft.dbRange, 'STFT'), ...(instTrace ? [instTrace] : [])]}
+      data={[heatmap(C, stft.times, stft.freqs, stft.db, tu.scale, fu.scale, a.stft.dbRange, 'STFT'), ...(instTrace ? [instTrace] : [])]}
       layout={tfLayout(`f (${fu.label})`, a.stft.logFrequency, a.stft.logFrequency ? [Math.max(fMinView, stft.binSpacing) / fu.scale, fMaxView / fu.scale] : [fMinView / fu.scale, fMaxView / fu.scale])}
       height={view === 'compare' ? 300 : 320}
       ariaLabel="Spectrogram (STFT magnitude)"
@@ -111,7 +113,7 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
 
   const cwtPlot = cwt ? (
     <Plot
-      data={[heatmap(cwt.times, cwt.freqs, cwt.db, tu.scale, fu.scale, a.cwt.dbRange, 'CWT'), ...(instTrace ? [instTrace] : [])]}
+      data={[heatmap(C, cwt.times, cwt.freqs, cwt.db, tu.scale, fu.scale, a.cwt.dbRange, 'CWT'), ...(instTrace ? [instTrace] : [])]}
       layout={tfLayout(`f (${fu.label}), log scale`, true, [cwtLo / fu.scale, cwtHi / fu.scale])}
       height={view === 'compare' ? 300 : 320}
       ariaLabel="Continuous wavelet transform magnitude"
@@ -136,14 +138,14 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
         hovertemplate: `f = %{y:.5g} ${fu.label}<br>%{x:.1f} dB<extra>|X(f)|</extra>`,
       },
     ];
-    const layout = baseLayout({
+    const layout = baseLayout(C, {
       showlegend: false,
       margin: { l: 56, r: 10, t: 8, b: 38 },
-      xaxis: axis('|X(f)| (dB)', { range: [-a.stft.dbRange, 3], autorange: false }),
-      yaxis: axis(`f (${fu.label})`, { range: [fMinView / fu.scale, fMaxView / fu.scale], autorange: false }),
+      xaxis: axis(C, '|X(f)| (dB)', { range: [-a.stft.dbRange, 3], autorange: false }),
+      yaxis: axis(C, `f (${fu.label})`, { range: [fMinView / fu.scale, fMaxView / fu.scale], autorange: false }),
     });
     return <Plot data={data} layout={layout} height={300} ariaLabel="Fourier magnitude of the whole record" filename="fft-column" />;
-  }, [view, spectra, fMinView, fMaxView, fu, a.stft.dbRange]);
+  }, [view, spectra, fMinView, fMaxView, fu, a.stft.dbRange, C]);
 
   const cwtProbe = cwt
     ? [0.1, 0.5, 0.9].map((q) => {

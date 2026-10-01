@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Check, ChevronDown, Download, GitCompareArrows, Link2, RotateCcw, Undo2, Upload } from 'lucide-react';
+import { Check, ChevronDown, Download, GitCompareArrows, Link2, Moon, RotateCcw, Sun, Undo2, Upload } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
 import type { UiMode } from '@/types/signal';
 import { PRESETS, PRESET_CATEGORIES } from '@/lib/presets/presets';
 import { Segmented } from '@/components/controls/primitives';
@@ -68,6 +69,23 @@ export interface HeaderProps {
   onResetPreset: () => void;
   undoLabel: string | null;
   onUndo: () => void;
+}
+
+function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  const toLight = theme === 'dark';
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[12px] text-ink-2 hover:text-ink"
+      aria-label={toLight ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={toLight ? 'Switch to light theme' : 'Switch to dark theme'}
+    >
+      {toLight ? <Sun size={13} aria-hidden /> : <Moon size={13} aria-hidden />}
+      <span className="hidden xl:inline">{toLight ? 'Light' : 'Dark'}</span>
+    </button>
+  );
 }
 
 export default function Header(p: HeaderProps) {
@@ -196,6 +214,7 @@ export default function Header(p: HeaderProps) {
             </>
           )}
         </Menu>
+        <ThemeToggle />
         {p.undoLabel ? (
           <button type="button" onClick={p.onUndo} className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[12px] text-ink-2 hover:text-ink" title={`Undo: ${p.undoLabel}`}>
             <Undo2 size={13} aria-hidden />

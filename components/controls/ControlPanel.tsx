@@ -57,7 +57,7 @@ export default function ControlPanel() {
 
   return (
     <div className="pb-6">
-      <Section title="Signal" resetKey="general">
+      <Section title="Signal" color="signal" resetKey="general">
         <SelectField<SignalType>
           label="Signal type"
           path="signal.signalType"
@@ -83,7 +83,7 @@ export default function ControlPanel() {
         </Gate>
       </Section>
 
-      <Section title="Carrier" resetKey="carrier" enablePath={allowed(lab.mode, 'advanced') ? 'signal.carrier.enabled' : undefined} isolateKeys={['carrier']}>
+      <Section title="Carrier" color="carrier" resetKey="carrier" enablePath={allowed(lab.mode, 'advanced') ? 'signal.carrier.enabled' : undefined} isolateKeys={['carrier']}>
         <EngineeringInput
           label={<>Carrier frequency f₀</>}
           path="signal.carrier.frequencyHz"
@@ -100,7 +100,7 @@ export default function ControlPanel() {
         {!s.carrier.enabled && !s.chirp.enabled ? <Note>Carrier off: the waveform is the baseband envelope itself.</Note> : null}
       </Section>
 
-      <Section title="Pulse envelope" resetKey="pulse" enablePath={allowed(lab.mode, 'advanced') ? 'signal.pulse.enabled' : undefined} isolateKeys={['pulseWidth', 'riseTime']}>
+      <Section title="Pulse envelope" color="pulse" resetKey="pulse" enablePath={allowed(lab.mode, 'advanced') ? 'signal.pulse.enabled' : undefined} isolateKeys={['pulseWidth', 'riseTime']}>
         <SelectField label="Envelope" path="signal.pulse.envelope" tip="envelope" level="advanced" options={ENVELOPES.map((e) => ({ value: e.id, label: e.label }))} />
         <EngineeringInput label="Pulse width τ" path="signal.pulse.widthSec" kind="time" min={50e-12} max={2e-6} hardMin={1e-14} hardMax={1} tip="pulseWidth" />
         <Readout
@@ -147,7 +147,7 @@ export default function ControlPanel() {
         </Gate>
       </Section>
 
-      <Section title="Pulse train / PRF" resetKey="repetition" enablePath="signal.repetition.enabled" isolateKeys={['prf']}>
+      <Section title="Pulse train / PRF" color="train" resetKey="repetition" enablePath="signal.repetition.enabled" isolateKeys={['prf']}>
         {!s.pulse.enabled && s.repetition.enabled ? <Note>Enable the pulse envelope to form a train.</Note> : null}
         <EngineeringInput label="PRF" path="signal.repetition.prfHz" kind="freq" min={10e3} max={500e6} hardMin={1} hardMax={1e11} tip="prf" disabled={!s.repetition.enabled} />
         <Readout label={<Tex>{'T_r = 1/PRF'}</Tex>} value={formatEngineering(1 / s.repetition.prfHz, 's')} />
@@ -202,7 +202,7 @@ export default function ControlPanel() {
         </Note>
       </Section>
 
-      <Section title="Coherence" level="advanced" resetKey="coherence" isolateKeys={['coherence']}>
+      <Section title="Coherence" color="coherence" level="advanced" resetKey="coherence" isolateKeys={['coherence']}>
         <FieldLabel label="Pulse-to-pulse phase" tip="coherence" />
         <div className="py-1">
           <Segmented<CoherenceMode>
@@ -252,7 +252,7 @@ export default function ControlPanel() {
         {!isTrain ? <Note>Coherence applies to pulse trains — enable the train to see its effect.</Note> : null}
       </Section>
 
-      <Section title="Jitter" level="advanced" resetKey="jitter" isolateKeys={['jitter']}>
+      <Section title="Jitter" color="jitter" level="advanced" resetKey="jitter" isolateKeys={['jitter']}>
         <ToggleField label="Timing jitter" path="signal.jitter.timingEnabled" tip="timingJitter" />
         {s.jitter.timingEnabled ? (
           <>
@@ -289,7 +289,7 @@ export default function ControlPanel() {
         {!isTrain ? <Note>Jitter acts between pulses — enable the pulse train.</Note> : null}
       </Section>
 
-      <Section title="Chirp (LFM)" level="advanced" resetKey="chirp" enablePath="signal.chirp.enabled" isolateKeys={['chirp']}>
+      <Section title="Chirp (LFM)" color="chirp" level="advanced" resetKey="chirp" enablePath="signal.chirp.enabled" isolateKeys={['chirp']}>
         <EngineeringInput label="Start frequency" path="signal.chirp.startFrequencyHz" kind="freq" min={1e6} max={20e9} hardMin={0} hardMax={1e12} tip="chirpStart" disabled={!s.chirp.enabled} />
         <EngineeringInput label="End frequency" path="signal.chirp.endFrequencyHz" kind="freq" min={1e6} max={20e9} hardMin={0} hardMax={1e12} tip="chirpEnd" disabled={!s.chirp.enabled} />
         <div className="py-1">
@@ -316,7 +316,7 @@ export default function ControlPanel() {
         ) : null}
       </Section>
 
-      <Section title="Modulation & noise" level="expert" resetKey="am" defaultOpen={false}>
+      <Section title="Modulation & noise" color="modulation" level="expert" resetKey="am" defaultOpen={false}>
         <ToggleField label="Amplitude modulation" path="signal.am.enabled" tip="am" />
         {s.am.enabled ? (
           <>
@@ -328,7 +328,7 @@ export default function ControlPanel() {
         {s.noise.enabled ? <NumberField label="Noise RMS" path="signal.noise.rms" min={0} max={1} step={0.001} tip="noiseRms" /> : null}
       </Section>
 
-      <Section title="Sampling" resetKey="sampling" isolateKeys={['sampling']}>
+      <Section title="Sampling" color="sampling" resetKey="sampling" isolateKeys={['sampling']}>
         <Gate level="advanced">
           <div className="flex items-center justify-between py-1">
             <FieldLabel label="Mode" tip="samplingMode" />
