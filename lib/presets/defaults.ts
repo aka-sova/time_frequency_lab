@@ -100,6 +100,7 @@ export const DEFAULT_ANALYSIS: AnalysisConfig = {
     showInstFreq: false,
   },
   cwt: { wavelet: 'morlet', omega0: 6, autoRange: true, fMinHz: 50e6, fMaxHz: 4e9, scales: 64, dbRange: 40 },
+  tfRange: { mode: 'manual', min: 0.7e9, max: 1.3e9 },
   tfView: 'stft',
 };
 

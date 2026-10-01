@@ -205,6 +205,8 @@ export interface AnalysisConfig {
     scales: number;
     dbRange: number;
   };
+  /** Frequency axis of the time–frequency panel (STFT / CWT), independent of the spectrum view. */
+  tfRange: AxisRange;
   tfView: TfView;
 }
 

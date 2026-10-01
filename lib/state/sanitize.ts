@@ -78,6 +78,7 @@ const RULES: Rule[] = [
   { path: 'analysis.spectrum.zeroPad', min: 1, max: 16 },
   { path: 'analysis.spectrum.dbFloor', min: -200, max: -10 },
   { path: 'analysis.spectrum.range.mode', values: ENUMS.rangeMode },
+  { path: 'analysis.tfRange.mode', values: ENUMS.rangeMode },
   { path: 'analysis.spectrum.estimator', values: ENUMS.estimator },
   { path: 'analysis.spectrum.welchSegments', min: 2, max: 64, int: true },
   { path: 'analysis.spectrum.kind', values: ENUMS.kind },

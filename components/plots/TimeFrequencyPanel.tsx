@@ -12,7 +12,8 @@ import { indexRange, minMaxIndices } from '@/lib/dsp/decimate';
 import { ANALYSIS_WINDOWS } from '@/lib/dsp/windows';
 import { FREQ_UNITS, TIME_UNITS, chooseUnit, formatEngineering, formatNumber } from '@/lib/units/format';
 import { allowed, useLab } from '@/components/lab/context';
-import { Gate, NumberField, Segmented, SelectField, ToggleField, EngineeringInput } from '@/components/controls/primitives';
+import { Maximize2, ScanLine } from 'lucide-react';
+import { Gate, NumberField, Segmented, SelectField, SmallButton, ToggleField, EngineeringInput } from '@/components/controls/primitives';
 import Tex from '@/components/education/Tex';
 import Plot from './Plot';
 import { axis, baseLayout, type Palette } from './theme';
@@ -47,7 +48,7 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
   const a = deferred.exp.analysis;
   const view = a.tfView;
   const nyq = signal.fs / 2;
-  const r = a.spectrum.range;
+  const r = a.tfRange;
   const fMinView = r.mode === 'manual' ? Math.max(0, Math.min(Math.abs(r.min), Math.abs(r.max)) * (r.min < 0 && r.max > 0 ? 0 : 1)) : 0;
   const fMaxView = r.mode === 'manual' ? Math.min(nyq, Math.max(Math.abs(r.min), Math.abs(r.max))) : nyq;
   const tr = a.time.range;
@@ -168,6 +169,12 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
             { value: 'compare', label: 'Fourier vs STFT vs wavelet' },
           ]}
         />
+        <SmallButton onClick={lab.fitTfFrequency} title="Frame the spectral envelope" ariaLabel="Fit time–frequency frequency axis">
+          <ScanLine size={12} aria-hidden /> Fit
+        </SmallButton>
+        <SmallButton onClick={() => lab.update('analysis.tfRange', { mode: 'full', min: 0, max: 0 })} active={r.mode === 'full'} ariaLabel="Show 0 to Nyquist in the time–frequency view">
+          <Maximize2 size={12} aria-hidden /> 0…f_N
+        </SmallButton>
         {stale ? <span className="text-[11px] text-muted">updating…</span> : null}
       </div>
 
@@ -259,7 +266,7 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
                   />
                   {a.cwt.wavelet === 'morlet' ? <NumberField label="Central frequency ω₀" path="analysis.cwt.omega0" min={3} max={20} step={0.5} tip="omega0" /> : null}
                   <NumberField label="Number of scales" path="analysis.cwt.scales" min={16} max={160} integer tip="scales" />
-                  <ToggleField label="Frequency range follows spectrum view" path="analysis.cwt.autoRange" tip="cwtRange" />
+                  <ToggleField label="Frequency range follows view axis" path="analysis.cwt.autoRange" tip="cwtRange" />
                   {!a.cwt.autoRange ? (
                     <>
                       <EngineeringInput label="f min" path="analysis.cwt.fMinHz" kind="freq" min={1e3} max={50e9} lock={false} />

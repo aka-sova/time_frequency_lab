@@ -89,3 +89,25 @@ describe('units', () => {
     expect(parseEngineering('abc', 's')).toBeNull();
   });
 });
+
+describe('time–frequency frequency range', () => {
+  it('starts one-sided from the spectrum view and is independent of it', async () => {
+    const { buildPresetById } = await import('@/lib/presets/apply');
+    const { setPath } = await import('@/lib/state/path');
+    const exp = buildPresetById('long-rf-burst');
+    const s = exp.analysis.spectrum.range;
+    expect(exp.analysis.tfRange).toEqual({ mode: 'manual', min: s.min, max: s.max });
+    const full = setPath(exp, 'analysis.tfRange', { mode: 'full', min: 0, max: 0 });
+    expect(full.analysis.spectrum.range).toEqual(s);
+  });
+
+  it('fitTfRange is never negative, even for a two-sided spectrum', async () => {
+    const { buildPresetById, fitTfRange } = await import('@/lib/presets/apply');
+    const { setPath } = await import('@/lib/state/path');
+    const exp = setPath(buildPresetById('default'), 'analysis.spectrum.sided', 'two');
+    const r = fitTfRange(exp);
+    expect(r.mode).toBe('manual');
+    expect(r.min).toBeGreaterThanOrEqual(0);
+    expect(r.max).toBeGreaterThan(r.min);
+  });
+});

@@ -43,6 +43,19 @@ export function fitFrequencyRange(exp: Experiment): AxisRange {
   return { mode: 'manual', min, max };
 }
 
+/** Fold a (possibly two-sided) spectrum range onto 0 … f_N for the time–frequency panel. */
+export function oneSidedRange(r: AxisRange): AxisRange {
+  if (r.mode !== 'manual') return { mode: 'full', min: 0, max: 0 };
+  const lo = r.min < 0 && r.max > 0 ? 0 : Math.min(Math.abs(r.min), Math.abs(r.max));
+  const hi = Math.max(Math.abs(r.min), Math.abs(r.max));
+  return { mode: 'manual', min: lo, max: hi };
+}
+
+/** Time–frequency view around the spectral envelope (always one-sided). */
+export function fitTfRange(exp: Experiment): AxisRange {
+  return oneSidedRange(fitFrequencyRange(exp));
+}
+
 export function applyLocks(next: Experiment, current: Experiment, locks: string[]): Experiment {
   let out = next;
   for (const p of locks) out = setPath(out, `signal.${p}`, getPath(current, `signal.${p}`));
@@ -56,6 +69,8 @@ export function buildPresetExperiment(preset: Preset, current?: Experiment, lock
   const hasFreq = preset.experiment.analysis?.spectrum?.range !== undefined;
   if (preset.fitTime ?? !hasTime) exp = setPath(exp, 'analysis.time.range', fitTimeRange(exp));
   if (preset.fitFrequency ?? !hasFreq) exp = setPath(exp, 'analysis.spectrum.range', fitFrequencyRange(exp));
+  // The time–frequency axis starts where the spectrum view does, unless the preset sets its own.
+  if (preset.experiment.analysis?.tfRange === undefined) exp = setPath(exp, 'analysis.tfRange', oneSidedRange(exp.analysis.spectrum.range));
   return exp;
 }
 

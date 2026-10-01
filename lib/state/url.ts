@@ -84,6 +84,9 @@ export const URL_KEYS: [string, string, Kind][] = [
   ['cw0', 'analysis.cwt.omega0', 'num'],
   ['cs', 'analysis.cwt.scales', 'num'],
   ['tfv', 'analysis.tfView', 'str'],
+  ['tfrm', 'analysis.tfRange.mode', 'str'],
+  ['tfmin', 'analysis.tfRange.min', 'num'],
+  ['tfmax', 'analysis.tfRange.max', 'num'],
 ];
 
 function enc(v: unknown, kind: Kind): string {

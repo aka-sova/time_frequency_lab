@@ -69,7 +69,7 @@ export const TOOLTIPS: Record<string, string> = {
   wavelet: 'Mother wavelet. Morlet: Gaussian-windowed complex exponential (good frequency localization). Mexican hat: real, better time localization.',
   omega0: 'Morlet central frequency parameter ω₀: more oscillations under the Gaussian envelope. Larger ω₀ gives better frequency and worse time resolution at every scale.',
   scales: 'Number of logarithmically spaced analysis frequencies (scales).',
-  cwtRange: 'Frequency range analyzed by the CWT.',
+  cwtRange: 'Frequency range analyzed by the CWT. When on, it follows the time–frequency panel’s own axis (Fit / 0…f_N), not the spectrum view.',
   fftResolution: 'Frequency-bin spacing fₛ/N. It is not necessarily the physical bandwidth or resolving capability of the complete measurement.',
   cursors: 'Draggable measurement cursors in both plots: Δt, Δf and their product.',
 };

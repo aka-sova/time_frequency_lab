@@ -19,6 +19,8 @@ export interface LabApi {
   isolate: (key: IsolateKey) => void;
   fitTime: () => void;
   fitFrequency: () => void;
+  /** Fit the time–frequency panel's frequency axis (independent of the spectrum view). */
+  fitTfFrequency: () => void;
   applyPreset: (id: string) => void;
   setTab: (t: WorkspaceTab) => void;
 }

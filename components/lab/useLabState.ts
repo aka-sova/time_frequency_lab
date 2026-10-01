@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Experiment, SignalType, UiMode } from '@/types/signal';
-import { buildCompareExperiment, buildPresetById, buildPresetExperiment, fitFrequencyRange, fitTimeRange, applyLocks } from '@/lib/presets/apply';
+import { buildCompareExperiment, buildPresetById, buildPresetExperiment, fitFrequencyRange, fitTfRange, fitTimeRange, applyLocks } from '@/lib/presets/apply';
 import { getPreset } from '@/lib/presets/presets';
 import { signalTypeTemplate } from '@/lib/presets/defaults';
 import { isolate as isolateExperiment, type IsolateKey } from '@/lib/presets/isolate';
@@ -174,12 +174,19 @@ export function useLabState() {
     setExp(next);
   }, []);
 
+  const fitTfFrequency = useCallback(() => {
+    const next = setPath(expRef.current, 'analysis.tfRange', fitTfRange(expRef.current));
+    expRef.current = next;
+    setExp(next);
+  }, []);
+
   const isolate = useCallback(
     (key: IsolateKey) => {
       remember('Isolated effect');
       let next = applyLocks(isolateExperiment(key, expRef.current), expRef.current, locks);
       next = setPath(next, 'analysis.time.range', fitTimeRange(next));
       next = setPath(next, 'analysis.spectrum.range', fitFrequencyRange(next));
+      next = setPath(next, 'analysis.tfRange', fitTfRange(next));
       expRef.current = next;
       setExp(next);
       setExplanation({
@@ -248,8 +255,8 @@ export function useLabState() {
   }, []);
 
   const api: LabApi = useMemo(
-    () => ({ exp, mode, presetId, update, updateMany, isLocked, toggleLock, resetSection, isolate, fitTime, fitFrequency, applyPreset, setTab }),
-    [exp, mode, presetId, update, updateMany, isLocked, toggleLock, resetSection, isolate, fitTime, fitFrequency, applyPreset],
+    () => ({ exp, mode, presetId, update, updateMany, isLocked, toggleLock, resetSection, isolate, fitTime, fitFrequency, fitTfFrequency, applyPreset, setTab }),
+    [exp, mode, presetId, update, updateMany, isLocked, toggleLock, resetSection, isolate, fitTime, fitFrequency, fitTfFrequency, applyPreset],
   );
 
   return {
