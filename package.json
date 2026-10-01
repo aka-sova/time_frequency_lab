@@ -1,0 +1,36 @@
+{
+  "name": "time-frequency-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive time–frequency signal laboratory: explore how waveform structure in time determines spectral structure in frequency.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "katex": "^0.18.10",
+    "lucide-react": "^1.49.0",
+    "next": "^16.3.8",
+    "plotly.js-dist-min": "^4.1.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/katex": "^0.16.8",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}
