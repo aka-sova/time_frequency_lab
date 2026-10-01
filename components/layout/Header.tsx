@@ -93,7 +93,7 @@ export default function Header(p: HeaderProps) {
   const [confirm, setConfirm] = useState<'exp' | 'preset' | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   return (
-    <header className="sticky top-0 z-30 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur">
+    <header className="sticky top-0 z-30 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-bg px-4 py-2">
       <div className="mr-auto min-w-0">
         <h1 className="text-[15px] font-semibold tracking-tight text-ink">Time–Frequency Lab</h1>
         <p className="truncate text-[11.5px] text-muted">Explore how waveform structure in time determines spectral structure in frequency.</p>

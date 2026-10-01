@@ -104,5 +104,5 @@ export default function Plot({ data, layout, config, className, height, ariaLabe
       </div>
     );
   }
-  return <div ref={ref} className={className} style={{ height, width: '100%', minWidth: 0, overflow: 'hidden' }} role="img" aria-label={ariaLabel} />;
+  return <div ref={ref} className={className} style={{ height, width: '100%', minWidth: 0, overflow: 'hidden', isolation: 'isolate' }} role="img" aria-label={ariaLabel} />;
 }
