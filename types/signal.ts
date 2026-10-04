@@ -42,10 +42,12 @@ export type JitterMode = 'random' | 'periodic';
 
 export type SamplingMode = 'auto' | 'manual';
 
+export type AmplitudeUnit = 'normalized' | 'V' | 'V/m';
+
 export interface SignalConfig {
   signalType: SignalType;
   amplitude: number;
-  amplitudeUnit: 'normalized' | 'V';
+  amplitudeUnit: AmplitudeUnit;
 
   carrier: {
     enabled: boolean;
