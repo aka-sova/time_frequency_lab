@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { LabContext } from './context';
 import { useLabState } from './useLabState';
 import Header from '@/components/layout/Header';
@@ -17,6 +17,7 @@ import Workspace from '@/components/workspace/Workspace';
 import ErrorBoundary from '@/components/layout/ErrorBoundary';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import { FontSizeProvider } from '@/components/layout/FontSizeProvider';
+import TutorialHost from '@/components/tutorial/TutorialHost';
 import { generateSignal } from '@/lib/dsp/signals';
 import { computeMeasurements, computeSpectra } from '@/lib/dsp/analyze';
 import { collectWarnings, type LabWarning } from '@/lib/dsp/warnings';
@@ -48,6 +49,7 @@ function LabInner() {
   const { signal, spectra, measurements } = useAnalysis(exp);
   const compareExp = useMemo(() => (st.compare ? { signal: st.compare.signal, analysis: exp.analysis } : null), [st.compare, exp.analysis]);
   const cmp = useAnalysis(compareExp);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const tfVisible = { stft: exp.analysis.tfView !== 'cwt', cwt: exp.analysis.tfView !== 'stft' };
   const warnings = useMemo(
@@ -120,6 +122,12 @@ function LabInner() {
 
   if (!signal || !spectra || !measurements) return null;
 
+  const saveA = () => {
+    st.setCompare(exp);
+    st.setTab('ab');
+    st.setExplanation({ title: 'Saved as A', text: 'Now modify parameters: plots overlay A (dotted) and the live configuration B. The A/B tab lists the differences.' });
+  };
+
   return (
     <LabContext.Provider value={api}>
       <div className="min-h-screen">
@@ -129,11 +137,8 @@ function LabInner() {
           presetId={st.presetId}
           onPreset={api.applyPreset}
           hasA={st.compare !== null}
-          onSaveA={() => {
-            st.setCompare(exp);
-            st.setTab('ab');
-            st.setExplanation({ title: 'Saved as A', text: 'Now modify parameters: plots overlay A (dotted) and the live configuration B. The A/B tab lists the differences.' });
-          }}
+          onSaveA={saveA}
+          onTutorial={() => setTutorialOpen(true)}
           onClearA={() => st.setCompare(null)}
           onCopyLink={onCopyLink}
           onExport={onExport}
@@ -155,7 +160,7 @@ function LabInner() {
             <StatusBar explanation={st.explanation} onDismiss={() => st.setExplanation(null)} warnings={warnings} onFix={onFix} />
             <MeasurementStrip signal={signal} m={measurements} />
             <CursorReadout />
-            <div className="border-b border-line">
+            <div className="border-b border-line" data-tour="time-domain">
               <TimeToolbar />
               <div className="px-2">
                 <ErrorBoundary label="Time-domain plot" resetKey={exp}>
@@ -163,7 +168,7 @@ function LabInner() {
                 </ErrorBoundary>
               </div>
             </div>
-            <div className="border-b border-line">
+            <div className="border-b border-line" data-tour="frequency-domain">
               <SpectrumToolbar m={measurements} />
               <div className="px-2">
                 <ErrorBoundary label="Spectrum plot" resetKey={exp}>
@@ -202,6 +207,12 @@ function LabInner() {
           </p>
         </footer>
       </div>
+      <TutorialHost
+        open={tutorialOpen}
+        onClose={() => setTutorialOpen(false)}
+        ctx={{ mode: st.mode, presetId: st.presetId, tab: st.tab, hasA: st.compare !== null }}
+        api={{ setMode: st.setMode, applyPreset: api.applyPreset, setTab: st.setTab, saveA }}
+      />
     </LabContext.Provider>
   );
 }

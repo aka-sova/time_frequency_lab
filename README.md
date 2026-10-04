@@ -99,6 +99,11 @@ The app is a single statically prerendered Next.js page; all computation runs in
   experiments, Fourier-synthesis mode (with a "randomize phases" twist), spectral-leakage laboratory
   with measured window metrics, KaTeX mathematics panel that follows the configuration, theory cards,
   parameter → effect table and a list of common conceptual mistakes.
+- **Tutorial**: the **Tutorial** button in the top bar opens a 25-step guided tour (Next / Previous / X, Esc to close). A card
+  explains each area while the matching part of the screen is highlighted; some steps ask you to act (change the mode,
+  load a preset, save A) and unlock **Next** when done, or you can press **Do it for me**. It covers the layout, mode
+  selection, the control panel, two preset demonstrations and every workspace tab. The card can be dragged. Content lives
+  in `lib/tutorial/steps.ts`; placement logic in `lib/tutorial/position.ts`.
 - **Text size**: − / + buttons in the header scale all UI text and plot fonts from 50 % to 300 % in 10 % steps
   (click the percentage to reset). The setting is remembered in the browser. Above ~250 % on a narrow window the
   page scrolls horizontally, because layout breakpoints do not follow the text scale.

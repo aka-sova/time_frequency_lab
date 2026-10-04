@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Check, ChevronDown, Download, GitCompareArrows, Link2, Minus, Moon, Plus, RotateCcw, Sun, Undo2, Upload } from 'lucide-react';
+import { Check, ChevronDown, Download, GitCompareArrows, GraduationCap, Link2, Minus, Moon, Plus, RotateCcw, Sun, Undo2, Upload } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { useFontSize } from './FontSizeProvider';
 import { FONT_SCALE_MAX, FONT_SCALE_MIN, formatScale } from '@/lib/ui/fontScale';
@@ -71,6 +71,7 @@ export interface HeaderProps {
   onResetPreset: () => void;
   undoLabel: string | null;
   onUndo: () => void;
+  onTutorial: () => void;
 }
 
 /** Text size: − / + in 10 % steps (50–300 %), click the percentage to reset. Scales UI text and plot fonts. */
@@ -160,9 +161,20 @@ export default function Header(p: HeaderProps) {
         </select>
       </label>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5" data-tour="header-actions">
         <button
           type="button"
+          onClick={p.onTutorial}
+          data-tour="tutorial"
+          className="inline-flex items-center gap-1 rounded-sm border border-accent px-2 py-1 text-[0.75rem] text-ink hover:bg-accent/15"
+          title="Start the guided tour of the interface"
+        >
+          <GraduationCap size={13} aria-hidden />
+          <span>Tutorial</span>
+        </button>
+        <button
+          type="button"
+          data-tour="save-a"
           onClick={p.hasA ? p.onClearA : p.onSaveA}
           className={`inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[0.75rem] ${p.hasA ? 'border-s5 text-ink' : 'border-line-strong text-ink-2 hover:text-ink'}`}
           title={p.hasA ? 'Remove the saved A configuration' : 'Save the current configuration as A, then modify to compare (B = live)'}
