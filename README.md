@@ -24,6 +24,10 @@ generated waveform or from a clearly labeled analytical formula.
 | coherence loss | the comb loses contrast; pulse bandwidth is unchanged |
 | fₛ < 2f_max | aliasing — the physical spectrum is unchanged |
 | T_obs ↑ | DFT bin spacing Δf = 1/T_obs ↓ |
+| same peak, other shape | energy and net area change: a monocycle carries less energy than a Gaussian of equal peak |
+| PRF ↑ | average power ∝ PRF (peak power fixed) until pulses overlap |
+| instrument BW ↓ | displayed peak ↓ and FWHM ↑ even at a high sample rate |
+| trigger jitter σ_j ↑ | averaged pulse widens: σ_avg = √(σ² + σ_j²), peak × σ/σ_avg |
 
 and that *short time localization ⇔ broad frequency content* is a property of the waveform and of
 Fourier analysis, not an artifact of sampling.
@@ -82,12 +86,20 @@ The app is a single statically prerendered Next.js page; all computation runs in
   displayed spectrum and for the single-pulse envelope; FWHM, RMS duration, rise/fall, duty cycle, peak
   and RMS amplitude, carrier cycles, fractional bandwidth; τ·B₋₃dB, τ·B₉₉%, σ_tσ_f with Gaussian
   reference values; comb spacing, line width and line-to-valley contrast; a live τ-vs-B mini chart.
+- **Power & energy** (tab): amplitude in volts across a load R, or V/m in free space (η₀ = 376.73 Ω) —
+  peak power, energy / fluence, equivalent width E/P_peak, net area, average power at a PRF *including
+  overlapping pulses*, an average-power-vs-PRF chart, and pulse width under several definitions
+  (amplitude / power FWHM, energy fractions, custom level, main-lobe vs outermost crossing).
+- **Instrument model** (tab): any waveform seen through trigger-jitter averaging, a single-pole
+  bandwidth limit, scope sampling (rate and phase) and an optional ADC clip, with true-vs-displayed
+  peak, FWHM and rise time, plus small rise-time-budget and first-order power-uncertainty calculators.
+  Equations and their checks: [docs/equation-verification.md](docs/equation-verification.md).
 - **Cursors**: draggable t₁/t₂ and f₁/f₂ with Δt, Δf, Δt·Δf; "FFT of cursor selection only".
 - **Learning tools**: context-sensitive explanations, warnings with one-click fixes, guided
   experiments, Fourier-synthesis mode (with a "randomize phases" twist), spectral-leakage laboratory
   with measured window metrics, KaTeX mathematics panel that follows the configuration, theory cards,
   parameter → effect table and a list of common conceptual mistakes.
-- **Workflow**: 28 presets (configuration data), Basic/Advanced/Expert modes, *Isolate effect* buttons,
+- **Workflow**: 36 presets (configuration data), Basic/Advanced/Expert modes, *Isolate effect* buttons,
   parameter locks, A/B comparison with difference table, parameter sweeps, per-section reset, undo,
   shareable URL (`?preset=coherent-train&f0=1e9&pw=1e-8&prf=1e6`), CSV/JSON export, JSON import, PNG
   export from each plot's toolbar.
@@ -130,6 +142,9 @@ The DSP engine has no React dependency:
 | `measurements.ts` | FWHM, 10–90 % edges, RMS duration, SNR |
 | `stft.ts`, `wavelet.ts` | STFT and frequency-domain CWT |
 | `analyze.ts` | pipeline: spectra + measurements |
+| `power.ts` | power / energy in V·R and V/m·η₀, periodic average power with overlap folding |
+| `pulsewidth.ts` | pulse width by amplitude, power or cumulative-energy definition |
+| `instrument.ts`, `budget.ts` | bandwidth / jitter / sampling / clip model; rise-time and uncertainty budgets |
 | `leakage.ts`, `synthesis.ts`, `sweep.ts`, `warnings.ts`, `decimate.ts` | demos, sweeps, warnings, display decimation |
 
 Performance: the record is regenerated and transformed synchronously (typical 4 k–32 k samples, max
@@ -178,5 +193,9 @@ data (re-decimated for the zoomed range, so peaks are never lost).
 - STFT frame count and displayed frequency rows are limited for responsiveness; CWT cost is
   scales × N log N and is computed on the main thread (deferred).
 - Phase plots are masked below the dB floor (the phase of numerical noise is meaningless).
+- The instrument model is a single-pole low-pass; trigger-jitter averaging is the *expected* trace of an
+  infinite average (no noise); real instruments and sensors have other responses. The rise-time
+  quadrature rule `√Σt²` is exact for Gaussian responses and ≈ 8 % low for cascaded single poles.
+- Power density in V/m is the far-field plane-wave relation S = E²/η₀, not antenna or radiated power.
 - This is educational DSP/RF visualization software with normalized amplitudes — not an operational
   effects simulator.

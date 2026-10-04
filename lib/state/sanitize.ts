@@ -30,7 +30,7 @@ export const ENUMS = {
   kind: ['auto', 'baseband', 'bandpass'],
   phaseUnit: ['deg', 'rad'],
   phaseRef: ['center', 'start'],
-  ampUnit: ['normalized', 'V'],
+  ampUnit: ['normalized', 'V', 'V/m'],
 } as const;
 
 const RULES: Rule[] = [
@@ -95,6 +95,12 @@ const RULES: Rule[] = [
   { path: 'analysis.cwt.scales', min: 8, max: 256, int: true },
   { path: 'analysis.cwt.dbRange', min: 10, max: 120 },
   { path: 'analysis.tfView', values: ENUMS.tfView },
+  { path: 'analysis.load.resistanceOhm', min: 0.1, max: 1e6 },
+  { path: 'analysis.instrument.bandwidthHz', min: 1e6, max: 1e12 },
+  { path: 'analysis.instrument.sampleRateHz', min: 1e6, max: 1e13 },
+  { path: 'analysis.instrument.samplePhasePct', min: 0, max: 100 },
+  { path: 'analysis.instrument.triggerJitterRmsSec', min: 0, max: 1e-6 },
+  { path: 'analysis.instrument.clipRatio', min: 0.05, max: 10 },
 ];
 
 /** Recursively copies only keys present in the template, with matching primitive types. */

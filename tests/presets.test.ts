@@ -10,6 +10,9 @@ import { isolate } from '@/lib/presets/isolate';
 import { setPath } from '@/lib/state/path';
 import { formatEngineering, parseEngineering } from '@/lib/units/format';
 import { collectWarnings } from '@/lib/dsp/warnings';
+import { ETA0, energyStats, periodicStats, powerContext } from '@/lib/dsp/power';
+import { simulateInstrument } from '@/lib/dsp/instrument';
+import { generateSignal } from '@/lib/dsp/signals';
 
 describe('presets', () => {
   it('has at least 20 presets with unique ids', () => {
@@ -109,5 +112,59 @@ describe('time–frequency frequency range', () => {
     expect(r.mode).toBe('manual');
     expect(r.min).toBeGreaterThanOrEqual(0);
     expect(r.max).toBeGreaterThan(r.min);
+  });
+});
+
+describe('power & instrument presets', () => {
+  const build = (id: string) => buildPresetExperiment(PRESETS.find((p) => p.id === id)!);
+
+  it('uwb-gaussian-50ohm reproduces 2 W / 1.77245 nJ / 177.245 µW', () => {
+    const e = build('uwb-gaussian-50ohm');
+    const sig = generateSignal(e.signal);
+    const ctx = powerContext(e.signal.amplitudeUnit, e.analysis.load.resistanceOhm)!;
+    const s = energyStats(sig.singlePulse, sig.fs, ctx.impedance);
+    expect(s.peakPower).toBeCloseTo(2, 4);
+    expect(s.energy / 1.77245385e-9).toBeCloseTo(1, 4);
+    expect(periodicStats(sig.singlePulse, sig.fs, e.signal.repetition.prfHz, ctx.impedance).averagePower / 177.245385e-6).toBeCloseTo(1, 4);
+  });
+
+  it('field-10vm-air: S_pk = 0.26544 W/m² (E²/η₀)', () => {
+    const e = build('field-10vm-air');
+    expect(e.signal.amplitudeUnit).toBe('V/m');
+    const sig = generateSignal(e.signal);
+    expect(energyStats(sig.singlePulse, sig.fs, ETA0).peakPower).toBeCloseTo(0.265442, 5);
+  });
+
+  it('uwb-monocycle-power has ~zero net area while its Gaussian partner (A side) does not', () => {
+    const p = PRESETS.find((q) => q.id === 'uwb-monocycle-power')!;
+    const a = generateSignal(buildCompareExperiment(p)!.signal);
+    const b = generateSignal(buildPresetExperiment(p).signal);
+    expect(Math.abs(energyStats(b.singlePulse, b.fs, 50).netArea)).toBeLessThan(1e-3 * Math.abs(energyStats(a.singlePulse, a.fs, 50).netArea));
+  });
+
+  it('prf-overlap-power really overlaps and differs from E·PRF', () => {
+    const e = build('prf-overlap-power');
+    const sig = generateSignal(e.signal);
+    const r = periodicStats(sig.singlePulse, sig.fs, e.signal.repetition.prfHz, 50);
+    expect(r.overlap).toBe(true);
+    const naive = energyStats(sig.singlePulse, sig.fs, 50).energy * e.signal.repetition.prfHz;
+    expect(r.averagePower / naive).toBeGreaterThan(1.2);
+  });
+
+  type Metrics = ReturnType<typeof simulateInstrument>['metrics'];
+  it.each([
+    ['scope-bandwidth-limit', (m: Metrics) => expect(m.peakErrorDisplayedPct).toBeLessThan(-35)],
+    ['scope-trigger-jitter', (m: Metrics) => expect(m.peakDisplayed / m.peakTrue).toBeCloseTo(0.8944, 1)],
+    ['scope-undersampling', (m: Metrics) => expect(m.peakSampled / m.peakTrue).toBeLessThan(0.95)],
+    ['scope-adc-clipping', (m: Metrics) => expect(m.peakSampled / m.peakTrue).toBeCloseTo(0.7, 6)],
+  ])('%s demonstrates its effect', (id, check) => {
+    const e = build(id as string);
+    const sig = generateSignal(e.signal);
+    check(simulateInstrument(sig.xIdeal, sig.fs, e.analysis.instrument).metrics);
+  });
+
+  it('new presets open the matching tab', () => {
+    for (const id of ['uwb-gaussian-50ohm', 'uwb-monocycle-power', 'field-10vm-air', 'prf-overlap-power']) expect(PRESETS.find((p) => p.id === id)!.tab).toBe('power');
+    for (const id of ['scope-bandwidth-limit', 'scope-trigger-jitter', 'scope-undersampling', 'scope-adc-clipping']) expect(PRESETS.find((p) => p.id === id)!.tab).toBe('instrument');
   });
 });

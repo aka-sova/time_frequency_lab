@@ -5,7 +5,7 @@ import { Info, Lock, LockOpen } from 'lucide-react';
 import type { UiMode } from '@/types/signal';
 import { allowed, useLab } from '@/components/lab/context';
 import { getPath } from '@/lib/state/path';
-import { CHIRP_RATE_UNITS, FREQ_UNITS, TIME_UNITS, chooseUnit, parseEngineering, type UnitChoice } from '@/lib/units/format';
+import { CHIRP_RATE_UNITS, FIELD_UNITS, FREQ_UNITS, TIME_UNITS, VOLT_UNITS, chooseUnit, parseEngineering, type UnitChoice } from '@/lib/units/format';
 import { TOOLTIPS } from '@/lib/education/tooltips';
 
 export function Gate({ level = 'basic', children }: { level?: UiMode; children: ReactNode }) {
@@ -70,8 +70,8 @@ export function FieldLabel({ htmlFor, label, tip, lockPath, right }: { htmlFor?:
   );
 }
 
-const UNIT_SETS = { time: TIME_UNITS, freq: FREQ_UNITS, chirp: CHIRP_RATE_UNITS } as const;
-const BASE = { time: 's', freq: 'Hz', chirp: 'Hz/s' } as const;
+const UNIT_SETS = { time: TIME_UNITS, freq: FREQ_UNITS, chirp: CHIRP_RATE_UNITS, volt: VOLT_UNITS, field: FIELD_UNITS } as const;
+const BASE = { time: 's', freq: 'Hz', chirp: 'Hz/s', volt: 'V', field: 'V/m' } as const;
 
 function trimNumber(v: number): string {
   if (!Number.isFinite(v)) return '';

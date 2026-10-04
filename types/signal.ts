@@ -42,10 +42,12 @@ export type JitterMode = 'random' | 'periodic';
 
 export type SamplingMode = 'auto' | 'manual';
 
+export type AmplitudeUnit = 'normalized' | 'V' | 'V/m';
+
 export interface SignalConfig {
   signalType: SignalType;
   amplitude: number;
-  amplitudeUnit: 'normalized' | 'V';
+  amplitudeUnit: AmplitudeUnit;
 
   carrier: {
     enabled: boolean;
@@ -208,6 +210,21 @@ export interface AnalysisConfig {
   /** Frequency axis of the time–frequency panel (STFT / CWT), independent of the spectrum view. */
   tfRange: AxisRange;
   tfView: TfView;
+  /** Load used to turn volts into watts (amplitudeUnit 'V'). Free space uses η₀ and ignores this. */
+  load: {
+    resistanceOhm: number;
+  };
+  /** Measurement-instrument model (Instrument tab). */
+  instrument: {
+    bandwidthHz: number;
+    sampleRateHz: number;
+    /** Offset of the first sample, % of the sample period. */
+    samplePhasePct: number;
+    triggerJitterRmsSec: number;
+    clipEnabled: boolean;
+    /** ADC full scale ÷ true peak amplitude. */
+    clipRatio: number;
+  };
 }
 
 export interface Experiment {

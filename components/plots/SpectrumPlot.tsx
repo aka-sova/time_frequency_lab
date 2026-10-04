@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { Annotation, Data, Layout, Shape } from 'plotly.js-dist-min';
+import type { AmplitudeUnit } from '@/types/signal';
 import type { Spectra, Measurements } from '@/lib/dsp/analyze';
 import type { SignalResult } from '@/lib/dsp/signals';
 import { indexRange, minMaxIndices, pick } from '@/lib/dsp/decimate';
@@ -29,8 +30,10 @@ function num(e: RelayoutEvent, k: string): number | undefined {
   return typeof v === 'number' ? v : typeof v === 'string' && v !== '' ? Number(v) : undefined;
 }
 
-export function unitLabels(amplitudeUnit: 'normalized' | 'V') {
-  return amplitudeUnit === 'V' ? { ft: 'V/Hz', amp: 'V', psd: 'V²/Hz' } : { ft: 'a.u.·s', amp: 'a.u.', psd: 'a.u.²/Hz' };
+export function unitLabels(amplitudeUnit: AmplitudeUnit) {
+  if (amplitudeUnit === 'V') return { ft: 'V/Hz', amp: 'V', psd: 'V²/Hz' };
+  if (amplitudeUnit === 'V/m') return { ft: 'V/m/Hz', amp: 'V/m', psd: '(V/m)²/Hz' };
+  return { ft: 'a.u.·s', amp: 'a.u.', psd: 'a.u.²/Hz' };
 }
 
 export default function SpectrumPlot({ signal, spectra, measurements: m, compare, height }: Props) {

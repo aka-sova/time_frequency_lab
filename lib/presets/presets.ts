@@ -5,7 +5,7 @@
  */
 import type { DeepPartial, Experiment } from '@/types/signal';
 
-export type PresetCategory = 'Fundamentals' | 'Pulse trains' | 'Sampling & DFT' | 'Time–frequency' | 'UWB & bandwidth' | 'Experiments';
+export type PresetCategory = 'Fundamentals' | 'Pulse trains' | 'Sampling & DFT' | 'Time–frequency' | 'UWB & bandwidth' | 'Power & energy' | 'Instrument model' | 'Experiments';
 
 export interface Preset {
   id: string;
@@ -19,12 +19,25 @@ export interface Preset {
   /** Configuration loaded as the A side of an A/B comparison. */
   compareWith?: DeepPartial<Experiment>;
   /** Workspace tab to reveal. */
-  tab?: 'measurements' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
+  tab?: 'measurements' | 'power' | 'instrument' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
   intentional?: 'aliasing';
 }
 
 const MANUAL = (fs: number, n: number) => ({ mode: 'manual' as const, sampleRateHz: fs, sampleCount: n });
 const NO_TRAIN = { enabled: false };
+
+const FWHM_05NS = 1.1774100225e-9; // FWHM of a Gaussian with σ = 0.5 ns
+const GAUSS_V = {
+  signalType: 'gaussian' as const,
+  amplitude: 10,
+  amplitudeUnit: 'V' as const,
+  carrier: { enabled: false },
+  pulse: { envelope: 'gaussian' as const, widthSec: FWHM_05NS },
+  repetition: { enabled: false, prfHz: 100e3 },
+  sampling: MANUAL(100e9, 4096),
+};
+const INSTRUMENT_SIGNAL = { ...GAUSS_V, amplitude: 1 };
+const SPEC_2GHZ = { spectrum: { range: { mode: 'manual' as const, min: 0, max: 2e9 } } };
 
 export const PRESETS: Preset[] = [
   {
@@ -95,6 +108,84 @@ export const PRESETS: Preset[] = [
       analysis: { spectrum: { range: { mode: 'manual', min: 0, max: 6e9 } }, stft: { windowLength: 32, nfft: 256 } },
     },
     fitFrequency: false,
+  },
+  {
+    id: 'uwb-gaussian-50ohm',
+    name: 'Gaussian UWB pulse: 10 V into 50 Ω',
+    category: 'Power & energy',
+    description: 'σ = 0.5 ns, 10 V peak: 2 W peak power, 1.77245 nJ per pulse, 177 µW average at 100 kHz. Power scales with V², energy with V²·σ.',
+    experiment: { signal: GAUSS_V, analysis: { ...SPEC_2GHZ, load: { resistanceOhm: 50 } } },
+    fitFrequency: false,
+    tab: 'power',
+  },
+  {
+    id: 'uwb-monocycle-power',
+    name: 'Monocycle vs Gaussian: same peak, different energy',
+    category: 'Power & energy',
+    description: 'A bipolar monocycle with the same 10 V peak carries less energy and has zero net area (no DC). A side = the Gaussian of the previous preset.',
+    experiment: {
+      signal: { ...GAUSS_V, signalType: 'gaussian-derivative', pulse: { envelope: 'gaussian-d1', widthSec: FWHM_05NS } },
+      analysis: { spectrum: { range: { mode: 'manual', min: 0, max: 4e9 } }, load: { resistanceOhm: 50 } },
+    },
+    compareWith: { signal: GAUSS_V },
+    fitFrequency: false,
+    tab: 'power',
+  },
+  {
+    id: 'field-10vm-air',
+    name: 'Field pulse: 10 V/m in free space',
+    category: 'Power & energy',
+    description: 'Peak power density E²/η₀ = 0.265 W/m² and fluence in J/m² for a Gaussian field pulse. Plane-wave, far-field relation only.',
+    experiment: { signal: { ...GAUSS_V, amplitude: 10, amplitudeUnit: 'V/m' }, analysis: SPEC_2GHZ },
+    fitFrequency: false,
+    tab: 'power',
+  },
+  {
+    id: 'prf-overlap-power',
+    name: 'Average power when pulses overlap',
+    category: 'Power & energy',
+    description: 'Gaussian pulses repeated every 1 ns (PRF 1 GHz) overlap: amplitudes add before squaring, so average power is not E·PRF. See the average-power-vs-PRF chart.',
+    experiment: {
+      signal: { ...GAUSS_V, repetition: { enabled: true, prfHz: 1e9, pulseCount: 12 }, coherence: { mode: 'coherent', reference: 'pulse' } },
+      analysis: { load: { resistanceOhm: 50 } },
+    },
+    tab: 'power',
+  },
+  {
+    id: 'scope-bandwidth-limit',
+    name: 'Instrument bandwidth too low (150 MHz)',
+    category: 'Instrument model',
+    description: 'A 0.5 ns-σ pulse seen through a 150 MHz single pole: the peak drops by about 42 % and the pulse looks about 1.6× wider. Sampling is not the limit here.',
+    experiment: { signal: INSTRUMENT_SIGNAL, analysis: { instrument: { bandwidthHz: 0.15e9, sampleRateHz: 40e9, samplePhasePct: 25, triggerJitterRmsSec: 0, clipEnabled: false } } },
+    fitFrequency: false,
+    tab: 'instrument',
+  },
+  {
+    id: 'scope-trigger-jitter',
+    name: 'Trigger jitter in averaging (250 ps)',
+    category: 'Instrument model',
+    description: 'Averaging without time alignment convolves the pulse with the jitter distribution: σ_avg = √(σ² + σ_j²), peak × σ/σ_avg ≈ 0.894. Averaging does not remove jitter.',
+    experiment: { signal: INSTRUMENT_SIGNAL, analysis: { instrument: { bandwidthHz: 5e9, sampleRateHz: 20e9, samplePhasePct: 25, triggerJitterRmsSec: 250e-12, clipEnabled: false } } },
+    fitFrequency: false,
+    tab: 'instrument',
+  },
+  {
+    id: 'scope-undersampling',
+    name: 'Too few samples across the pulse',
+    category: 'Instrument model',
+    description: 'A 5 GHz instrument sampling at 1 GS/s puts about one sample per FWHM. The peak read from samples depends on the sample phase; try sweeping it.',
+    experiment: { signal: INSTRUMENT_SIGNAL, analysis: { instrument: { bandwidthHz: 5e9, sampleRateHz: 1e9, samplePhasePct: 0, triggerJitterRmsSec: 0, clipEnabled: false } } },
+    fitFrequency: false,
+    tab: 'instrument',
+  },
+  {
+    id: 'scope-adc-clipping',
+    name: 'ADC clipping flattens the peak',
+    category: 'Instrument model',
+    description: 'ADC full scale at 0.7 × the true peak: a flat top that looks like a flat pulse. The clip level is shown dashed.',
+    experiment: { signal: INSTRUMENT_SIGNAL, analysis: { instrument: { bandwidthHz: 5e9, sampleRateHz: 40e9, samplePhasePct: 0, triggerJitterRmsSec: 0, clipEnabled: true, clipRatio: 0.7 } } },
+    fitFrequency: false,
+    tab: 'instrument',
   },
   {
     id: 'coherent-train',
@@ -417,4 +508,4 @@ export function getPreset(id: string): Preset | undefined {
   return PRESETS.find((p) => p.id === id);
 }
 
-export const PRESET_CATEGORIES: PresetCategory[] = ['Fundamentals', 'Pulse trains', 'UWB & bandwidth', 'Sampling & DFT', 'Time–frequency', 'Experiments'];
+export const PRESET_CATEGORIES: PresetCategory[] = ['Fundamentals', 'Pulse trains', 'UWB & bandwidth', 'Power & energy', 'Instrument model', 'Sampling & DFT', 'Time–frequency', 'Experiments'];
