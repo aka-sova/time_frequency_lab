@@ -84,6 +84,13 @@ export const URL_KEYS: [string, string, Kind][] = [
   ['cw0', 'analysis.cwt.omega0', 'num'],
   ['cs', 'analysis.cwt.scales', 'num'],
   ['tfv', 'analysis.tfView', 'str'],
+  ['rl', 'analysis.load.resistanceOhm', 'num'],
+  ['ibw', 'analysis.instrument.bandwidthHz', 'num'],
+  ['ifs', 'analysis.instrument.sampleRateHz', 'num'],
+  ['iph', 'analysis.instrument.samplePhasePct', 'num'],
+  ['ijt', 'analysis.instrument.triggerJitterRmsSec', 'num'],
+  ['ice', 'analysis.instrument.clipEnabled', 'bool'],
+  ['icr', 'analysis.instrument.clipRatio', 'num'],
 ];
 
 function enc(v: unknown, kind: Kind): string {

@@ -101,6 +101,8 @@ export const DEFAULT_ANALYSIS: AnalysisConfig = {
   },
   cwt: { wavelet: 'morlet', omega0: 6, autoRange: true, fMinHz: 50e6, fMaxHz: 4e9, scales: 64, dbRange: 40 },
   tfView: 'stft',
+  load: { resistanceOhm: 50 },
+  instrument: { bandwidthHz: 1e9, sampleRateHz: 10e9, samplePhasePct: 0, triggerJitterRmsSec: 0, clipEnabled: false, clipRatio: 1.2 },
 };
 
 export const DEFAULT_EXPERIMENT: Experiment = { signal: DEFAULT_SIGNAL, analysis: DEFAULT_ANALYSIS };

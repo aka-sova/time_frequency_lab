@@ -3,7 +3,9 @@
  * prefixes are chosen automatically (or from a fixed unit list for inputs).
  */
 
-export type BaseUnit = 's' | 'Hz' | 'V' | 'rad' | '' | 'V/Hz' | 'Hz/s';
+import type { AmplitudeUnit } from '@/types/signal';
+
+export type BaseUnit = 's' | 'Hz' | 'V' | 'rad' | '' | 'V/Hz' | 'Hz/s' | 'V/m' | 'W' | 'J' | 'W/m²' | 'J/m²' | 'Ω';
 
 const PREFIXES: { p: string; e: number }[] = [
   { p: 'T', e: 12 },
@@ -38,6 +40,24 @@ export const FREQ_UNITS: UnitChoice[] = [
   { label: 'GHz', scale: 1e9 },
 ];
 
+export const VOLT_UNITS: UnitChoice[] = [
+  { label: 'mV', scale: 1e-3 },
+  { label: 'V', scale: 1 },
+  { label: 'kV', scale: 1e3 },
+  { label: 'MV', scale: 1e6 },
+];
+
+export const FIELD_UNITS: UnitChoice[] = [
+  { label: 'mV/m', scale: 1e-3 },
+  { label: 'V/m', scale: 1 },
+  { label: 'kV/m', scale: 1e3 },
+  { label: 'MV/m', scale: 1e6 },
+];
+
+export function amplitudeUnitLabel(u: AmplitudeUnit): string {
+  return u === 'normalized' ? 'norm.' : u;
+}
+
 export const CHIRP_RATE_UNITS: UnitChoice[] = [
   { label: 'Hz/s', scale: 1 },
   { label: 'MHz/µs', scale: 1e12 },
@@ -55,6 +75,12 @@ const ALLOWED: Partial<Record<BaseUnit, string[]>> = {
   s: ['', 'm', 'µ', 'n', 'p', 'f'],
   Hz: ['', 'k', 'M', 'G', 'T'],
   'Hz/s': ['', 'k', 'M', 'G', 'T'],
+  W: ['', 'k', 'M', 'G', 'm', 'µ', 'n', 'p'],
+  'W/m²': ['', 'k', 'M', 'G', 'm', 'µ', 'n', 'p'],
+  J: ['', 'k', 'm', 'µ', 'n', 'p', 'f'],
+  'J/m²': ['', 'k', 'm', 'µ', 'n', 'p', 'f'],
+  'V/m': ['', 'k', 'M', 'm', 'µ'],
+  Ω: ['', 'k', 'M', 'm'],
 };
 
 /** Formats with `digits` significant figures: formatEngineering(1.24e-8, 's') → "12.4 ns". */

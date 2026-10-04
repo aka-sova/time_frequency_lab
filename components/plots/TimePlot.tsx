@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import type { Data, Layout, Shape } from 'plotly.js-dist-min';
 import type { SignalResult } from '@/lib/dsp/signals';
 import { indexRange, minMaxIndices, pick } from '@/lib/dsp/decimate';
-import { TIME_UNITS, chooseUnit, formatEngineering } from '@/lib/units/format';
+import { TIME_UNITS, amplitudeUnitLabel, chooseUnit, formatEngineering } from '@/lib/units/format';
 import { useLab } from '@/components/lab/context';
 import Plot, { type RelayoutEvent } from './Plot';
 import { axis, baseLayout } from './theme';
@@ -38,7 +38,7 @@ export default function TimePlot({ signal, compare, height }: Props) {
   const lo = v ? v.lo : range.mode === 'manual' ? range.min : 0;
   const hi = v ? v.hi : range.mode === 'manual' ? range.max : T;
   const showInst = a.time.showInstFreq && signal.carrier.on;
-  const ampUnit = cfg.amplitudeUnit === 'V' ? 'V' : 'norm.';
+  const ampUnit = amplitudeUnitLabel(cfg.amplitudeUnit);
   const cursors = a.cursors;
 
   const { data, layout } = useMemo(() => {

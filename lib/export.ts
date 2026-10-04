@@ -1,5 +1,5 @@
 /** CSV / JSON export helpers (browser only). CSV columns carry explicit SI units. */
-import type { Experiment } from '@/types/signal';
+import type { AmplitudeUnit, Experiment } from '@/types/signal';
 import type { SignalResult } from '@/lib/dsp/signals';
 import type { Spectrum } from '@/lib/dsp/spectrum';
 import { phaseAt } from '@/lib/dsp/spectrum';
@@ -16,8 +16,12 @@ export function download(filename: string, content: string, type: string): void 
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function waveformCsv(sig: SignalResult, amplitudeUnit: 'normalized' | 'V'): string {
-  const u = amplitudeUnit === 'V' ? 'V' : 'normalized';
+function ampTag(u: AmplitudeUnit): string {
+  return u === 'V' ? 'V' : u === 'V/m' ? 'V_per_m' : 'normalized';
+}
+
+export function waveformCsv(sig: SignalResult, amplitudeUnit: AmplitudeUnit): string {
+  const u = ampTag(amplitudeUnit);
   const rows = [`t_s,x_${u},envelope_${u},instantaneous_frequency_Hz`];
   for (let i = 0; i < sig.n; i++) {
     const f = sig.instFreq[i];
@@ -26,9 +30,10 @@ export function waveformCsv(sig: SignalResult, amplitudeUnit: 'normalized' | 'V'
   return rows.join('\n');
 }
 
-export function spectrumCsv(s: Spectrum, tRef: number, amplitudeUnit: 'normalized' | 'V'): string {
-  const unit = s.scaling === 'ft' ? (amplitudeUnit === 'V' ? 'V_per_Hz' : 'norm_s') : amplitudeUnit === 'V' ? 'V' : 'normalized';
-  const rows = [`f_Hz,magnitude_${unit},magnitude_dB_re_peak,psd_two_sided_${amplitudeUnit === 'V' ? 'V2_per_Hz' : 'norm2_per_Hz'},phase_rad`];
+export function spectrumCsv(s: Spectrum, tRef: number, amplitudeUnit: AmplitudeUnit): string {
+  const tag = ampTag(amplitudeUnit);
+  const unit = s.scaling === 'ft' ? (amplitudeUnit === 'normalized' ? 'norm_s' : `${tag}_per_Hz`) : tag;
+  const rows = [`f_Hz,magnitude_${unit},magnitude_dB_re_peak,psd_two_sided_${amplitudeUnit === 'normalized' ? 'norm2' : `${tag}2`}_per_Hz,phase_rad`];
   let peak = 0;
   for (let k = 0; k < s.nfft; k++) peak = Math.max(peak, s.power[k]);
   // Ascending frequency (fftshift order): most negative frequency first.

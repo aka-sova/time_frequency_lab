@@ -65,7 +65,21 @@ export default function ControlPanel() {
           options={SIGNAL_TYPES.map((t) => ({ value: t.id, label: t.label }))}
         />
         <p className="pb-1 text-[11px] text-muted">{SIGNAL_TYPES.find((t) => t.id === s.signalType)?.description}</p>
-        <NumberField label="Amplitude A" path="signal.amplitude" min={0} max={2} step={0.01} suffix={s.amplitudeUnit === 'V' ? 'V' : 'norm.'} tip="amplitude" lock />
+        {s.amplitudeUnit === 'normalized' ? (
+          <NumberField label="Amplitude A" path="signal.amplitude" min={0} max={2} step={0.01} suffix="norm." tip="amplitude" lock />
+        ) : (
+          <EngineeringInput
+            label="Amplitude A (peak)"
+            path="signal.amplitude"
+            kind={s.amplitudeUnit === 'V' ? 'volt' : 'field'}
+            min={1e-2}
+            max={1e5}
+            hardMin={0}
+            hardMax={1e6}
+            tip="amplitude"
+            hint={s.amplitudeUnit === 'V' ? <>Across the {lab.exp.analysis.load.resistanceOhm} Ω load set in the Power &amp; energy tab</> : <>Free-space plane wave, η₀ = 376.73 Ω</>}
+          />
+        )}
         <Gate level="advanced">
           <div className="flex items-center justify-between py-1">
             <span className="text-[12px] text-ink-2">Amplitude unit</span>
@@ -74,8 +88,9 @@ export default function ControlPanel() {
               ariaLabel="Amplitude unit"
               value={s.amplitudeUnit}
               options={[
-                { value: 'normalized', label: 'normalized' },
+                { value: 'normalized', label: 'norm.' },
                 { value: 'V', label: 'V' },
+                { value: 'V/m', label: 'V/m' },
               ]}
               onChange={(v) => lab.update('signal.amplitudeUnit', v)}
             />

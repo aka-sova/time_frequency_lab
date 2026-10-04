@@ -1,0 +1,64 @@
+import { describe, expect, it } from 'vitest';
+import { DEFAULT_EXPERIMENT } from '@/lib/presets/defaults';
+import { sanitizeExperiment } from '@/lib/state/sanitize';
+import { experimentToQuery, queryToExperiment } from '@/lib/state/url';
+import { setPath } from '@/lib/state/path';
+import { amplitudeUnitLabel, formatEngineering } from '@/lib/units/format';
+import { waveformCsv } from '@/lib/export';
+import { generateSignal } from '@/lib/dsp/signals';
+
+describe('new config groups', () => {
+  it('defaults: 50 Ω load and a 1 GHz / 10 GS/s instrument', () => {
+    expect(DEFAULT_EXPERIMENT.analysis.load.resistanceOhm).toBe(50);
+    expect(DEFAULT_EXPERIMENT.analysis.instrument).toMatchObject({
+      bandwidthHz: 1e9,
+      sampleRateHz: 10e9,
+      samplePhasePct: 0,
+      triggerJitterRmsSec: 0,
+      clipEnabled: false,
+      clipRatio: 1.2,
+    });
+  });
+  it('sanitize accepts V/m and clamps instrument/load ranges', () => {
+    let e = setPath(DEFAULT_EXPERIMENT, 'signal.amplitudeUnit', 'V/m');
+    expect(sanitizeExperiment(e).signal.amplitudeUnit).toBe('V/m');
+    e = setPath(DEFAULT_EXPERIMENT, 'signal.amplitudeUnit', 'furlongs');
+    expect(sanitizeExperiment(e).signal.amplitudeUnit).toBe('normalized');
+    e = setPath(setPath(setPath(DEFAULT_EXPERIMENT, 'analysis.load.resistanceOhm', -5), 'analysis.instrument.samplePhasePct', 400), 'analysis.instrument.bandwidthHz', 1);
+    const s = sanitizeExperiment(e).analysis;
+    expect(s.load.resistanceOhm).toBe(0.1);
+    expect(s.instrument.samplePhasePct).toBe(100);
+    expect(s.instrument.bandwidthHz).toBe(1e6);
+  });
+  it('URL round-trips the new keys', () => {
+    let e = setPath(DEFAULT_EXPERIMENT, 'signal.amplitudeUnit', 'V/m');
+    e = setPath(e, 'analysis.load.resistanceOhm', 75);
+    e = setPath(e, 'analysis.instrument.bandwidthHz', 3e8);
+    e = setPath(e, 'analysis.instrument.clipEnabled', true);
+    const q = experimentToQuery(e, 'default');
+    const back = queryToExperiment(q)!.experiment;
+    expect(back.signal.amplitudeUnit).toBe('V/m');
+    expect(back.analysis.load.resistanceOhm).toBe(75);
+    expect(back.analysis.instrument.bandwidthHz).toBe(3e8);
+    expect(back.analysis.instrument.clipEnabled).toBe(true);
+  });
+});
+
+describe('units', () => {
+  it('formats W, J, V/m, W/m², J/m², Ω with SI prefixes', () => {
+    expect(formatEngineering(1.77245e-9, 'J')).toBe('1.77 nJ');
+    expect(formatEngineering(177.245e-6, 'W')).toBe('177 µW');
+    expect(formatEngineering(0.2654, 'W/m²')).toBe('265 mW/m²');
+    expect(formatEngineering(10e3, 'V/m')).toBe('10.0 kV/m');
+    expect(formatEngineering(50, 'Ω')).toBe('50.0 Ω');
+  });
+  it('amplitudeUnitLabel', () => {
+    expect(amplitudeUnitLabel('normalized')).toBe('norm.');
+    expect(amplitudeUnitLabel('V')).toBe('V');
+    expect(amplitudeUnitLabel('V/m')).toBe('V/m');
+  });
+  it('CSV header names the field unit', () => {
+    const sig = generateSignal(setPath(DEFAULT_EXPERIMENT, 'signal.amplitudeUnit', 'V/m').signal);
+    expect(waveformCsv(sig, 'V/m').split('\n')[0]).toContain('V_per_m');
+  });
+});
