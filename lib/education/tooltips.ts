@@ -1,7 +1,7 @@
 /** Concise tooltips for every technical parameter (keyed by control id). */
 export const TOOLTIPS: Record<string, string> = {
   signalType: 'Signal family. Each family is a template over the same general model; every parameter stays editable.',
-  amplitude: 'Peak amplitude A of the waveform (normalized, or volts if selected). Scales the spectrum without changing its shape.',
+  amplitude: 'Peak amplitude A of the waveform. Normalized, volts across the load set in Power & energy, or V/m for a free-space field. Scales the spectrum without changing its shape.',
   carrierEnabled: 'Multiply the envelope by a sinusoidal carrier. Without a carrier the pulse is a baseband signal centered at DC.',
   f0: 'Carrier frequency f₀. Translates the envelope spectrum to ±f₀; it does not set the envelope bandwidth.',
   phase: 'Initial carrier phase φ₀ at the pulse center (or t = 0 for a continuous wave). Changes spectral phase, not |X(f)|.',

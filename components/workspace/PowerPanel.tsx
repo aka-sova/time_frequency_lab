@@ -115,9 +115,9 @@ export default function PowerPanel({ signal }: { signal: SignalResult }) {
           <tbody>
             <Row k="PRF (Pulse train → PRF)" v={formatEngineering(prf, 'Hz')} />
             <Row k="Period" v={formatEngineering(calc.rep.period, 's')} />
-            <Row k="Average power" v={P(calc.rep.averagePower)} />
+            <Row k={field ? 'Average power density' : 'Average power'} v={P(calc.rep.averagePower)} />
             <Row k="Peak / average" v={formatNumber(calc.rep.peakToAverage, 4)} />
-            <Row k="Peak power (incl. overlap)" v={P(calc.rep.peakPower)} />
+            <Row k={field ? 'Peak power density (incl. overlap)' : 'Peak power (incl. overlap)'} v={P(calc.rep.peakPower)} />
           </tbody>
         </table>
         {!s.repetition.enabled ? <p className="mt-2 text-muted">The train is off; this is the average if the single pulse were repeated at the PRF above.</p> : null}
@@ -142,7 +142,7 @@ export default function PowerPanel({ signal }: { signal: SignalResult }) {
         ) : null}
       </Card>
 
-      <Card title="Pulse width — by definition" className="lg:col-span-2 2xl:col-span-1">
+      <Card title="Pulse width — by definition">
         <p className="mb-2 text-muted">The same pulse has different “widths”. Always state the definition{bandpass ? ' (RF pulse: measured on the Hilbert envelope)' : ''}.</p>
         <table className="w-full">
           <tbody>

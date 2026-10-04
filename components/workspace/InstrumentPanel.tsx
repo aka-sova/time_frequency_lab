@@ -66,14 +66,15 @@ export default function InstrumentPanel({ signal }: { signal: SignalResult }) {
         sy.push(sim.sampleV[k]);
       }
     }
+    const dense = sx.length > 120; // many samples: small markers only, so the traces underneath stay visible
     data.push({
       type: 'scatter',
-      mode: 'lines+markers',
+      mode: dense ? 'markers' : 'lines+markers',
       name: 'Scope samples',
       x: sx,
       y: sy,
       line: { color: C.envelope, width: 1 },
-      marker: { color: C.envelope, size: 7, line: { color: C.surface, width: 1.5 } },
+      marker: dense ? { color: C.envelope, size: 3 } : { color: C.envelope, size: 7, line: { color: C.surface, width: 1.5 } },
       hovertemplate: 'sample at %{x:.4g} ns<br>%{y:.4g}<extra></extra>',
     });
     if (Number.isFinite(sim.clipLevel)) data.push({ type: 'scatter', mode: 'lines', name: 'ADC clip', x: [lo, hi], y: [sim.clipLevel, sim.clipLevel], line: { color: C.cursor, width: 1, dash: 'dash' }, hoverinfo: 'skip' });

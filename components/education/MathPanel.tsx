@@ -68,6 +68,15 @@ export default function MathPanel() {
   parts.push({ label: 'Bin spacing / Nyquist', tex: `\\Delta f=\\frac{f_s}{N}=${formatEngineering(fs / n, 'Hz').replace('µ', '\\mu ')},\\qquad f_N=\\frac{f_s}{2}=${formatEngineering(fs / 2, 'Hz').replace('µ', '\\mu ')}` });
   parts.push({ label: 'Sampling (aliasing)', tex: 'X_s(f)=f_s\\sum_{m}X(f-mf_s)\\quad\\Rightarrow\\ \\text{overlap if } f_{\\max}>f_s/2' });
   parts.push({ label: 'Uncertainty', tex: '\\sigma_t\\,\\sigma_f\\ \\ge\\ \\frac{1}{4\\pi},\\quad \\text{equality for Gaussian envelopes}' });
+  if (s.amplitudeUnit !== 'normalized') {
+    const field = s.amplitudeUnit === 'V/m';
+    parts.push({ label: field ? 'Power density' : 'Instantaneous power', tex: field ? 'S(t)=\\frac{E^2(t)}{\\eta_0},\\quad \\eta_0=376.73\\,\\Omega' : 'P(t)=\\frac{v^2(t)}{R}' });
+    parts.push({ label: field ? 'Fluence' : 'Pulse energy', tex: field ? 'F=\\int S(t)\\,dt\\ \\ [\\mathrm{J/m^2}]' : 'E=\\int P(t)\\,dt=\\frac{1}{R}\\int v^2(t)\\,dt' });
+    parts.push({ label: 'Gaussian, peak A', tex: 'E=\\frac{A^2}{R}\\,\\sigma\\sqrt{\\pi},\\qquad \\tau_{\\mathrm{eq}}=\\frac{E}{P_{\\mathrm{pk}}}=\\sigma\\sqrt{\\pi}' });
+    parts.push({ label: 'Average power (no overlap)', tex: 'P_{\\mathrm{avg}}=E\\cdot PRF' });
+  }
+  parts.push({ label: 'Instrument: single pole', tex: 'H(f)=\\frac{1}{1+jf/\\mathrm{BW}},\\quad \\tau=\\frac{1}{2\\pi\\,\\mathrm{BW}},\\quad t_r^{10\\text{–}90}=\\ln 9\\,\\tau\\approx\\frac{0.35}{\\mathrm{BW}}' });
+  parts.push({ label: 'Instrument: jitter averaging', tex: '\\bar v(t)=v(t)\\ast\\mathcal N(0,\\sigma_j^2),\\quad \\sigma_{\\mathrm{avg}}=\\sqrt{\\sigma^2+\\sigma_j^2},\\quad \\frac{V_{\\mathrm{pk}}}{V_{\\mathrm{pk},0}}=\\frac{\\sigma}{\\sigma_{\\mathrm{avg}}}' });
 
   return (
     <div>
