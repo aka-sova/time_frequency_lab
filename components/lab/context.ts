@@ -4,7 +4,7 @@ import { createContext, useContext } from 'react';
 import type { Experiment, UiMode } from '@/types/signal';
 import type { IsolateKey } from '@/lib/presets/isolate';
 
-export type WorkspaceTab = 'measurements' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
+export type WorkspaceTab = 'measurements' | 'power' | 'instrument' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
 export type SectionKey = 'carrier' | 'pulse' | 'repetition' | 'coherence' | 'jitter' | 'chirp' | 'am' | 'noise' | 'sampling' | 'general';
 
 export interface LabApi {
