@@ -13,7 +13,7 @@ function Check({ label, path, tip }: { label: string; path: string; tip?: string
   const lab = useLab();
   const v = path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)[k], lab.exp) as boolean;
   return (
-    <label className="relative inline-flex cursor-pointer items-center gap-1 text-[11.5px] text-ink-2">
+    <label className="relative inline-flex cursor-pointer items-center gap-1 text-[0.71875rem] text-ink-2">
       <input type="checkbox" checked={v} onChange={() => lab.update(path, !v)} className="h-3 w-3 accent-accent" />
       {label}
       {tip ? <InfoTip tip={tip} label={label} /> : null}
@@ -26,7 +26,7 @@ export function TimeToolbar() {
   const a = lab.exp.analysis;
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5">
-      <h2 className="mr-1 text-[12px] font-semibold uppercase tracking-wider text-ink-2">Time domain x(t)</h2>
+      <h2 className="mr-1 text-[0.75rem] font-semibold uppercase tracking-wider text-ink-2">Time domain x(t)</h2>
       <SmallButton onClick={lab.fitTime} title="Frame the pulses" ariaLabel="Fit time axis to the signal">
         <ScanLine size={12} aria-hidden /> Fit
       </SmallButton>
@@ -63,7 +63,7 @@ export function SpectrumToolbar({ m }: { m: Measurements }) {
   return (
     <div className="px-4 py-1.5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h2 className="mr-1 text-[12px] font-semibold uppercase tracking-wider text-ink-2">Frequency domain</h2>
+        <h2 className="mr-1 text-[0.75rem] font-semibold uppercase tracking-wider text-ink-2">Frequency domain</h2>
         <Segmented ariaLabel="Spectrum display" value={sp.display} onChange={(v) => lab.update('analysis.spectrum.display', v)} options={DISPLAYS} size="xs" />
         {(sp.display === 'power' || sp.display === 'psd') && (
           <Segmented
@@ -105,12 +105,12 @@ export function SpectrumToolbar({ m }: { m: Measurements }) {
             <Check label="Phase" path="analysis.spectrum.showPhase" />
           </>
         ) : null}
-        <label className="inline-flex items-center gap-1 text-[11.5px] text-ink-2">
+        <label className="inline-flex items-center gap-1 text-[0.71875rem] text-ink-2">
           Floor
           <select
             value={sp.dbFloor}
             onChange={(e) => lab.update('analysis.spectrum.dbFloor', Number(e.target.value))}
-            className="rounded-sm border border-line-strong bg-surface px-1 py-0.5 text-[11.5px]"
+            className="rounded-sm border border-line-strong bg-surface px-1 py-0.5 text-[0.71875rem]"
             aria-label="dB floor"
           >
             {[-20, -30, -40, -60, -80, -100, -120, -160].map((v) => (
@@ -120,7 +120,7 @@ export function SpectrumToolbar({ m }: { m: Measurements }) {
             ))}
           </select>
         </label>
-        <label className="inline-flex items-center gap-1 text-[11.5px] text-ink-2" title="Reveal spectral tails that are normally invisible">
+        <label className="inline-flex items-center gap-1 text-[0.71875rem] text-ink-2" title="Reveal spectral tails that are normally invisible">
           <input
             type="checkbox"
             checked={sp.dbFloor <= -100}
@@ -130,7 +130,7 @@ export function SpectrumToolbar({ m }: { m: Measurements }) {
           Show theoretical tails
         </label>
         {adv ? (
-          <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className="ml-auto inline-flex items-center gap-1 text-[11.5px] text-muted hover:text-ink">
+          <button type="button" onClick={() => setMore(!more)} aria-expanded={more} className="ml-auto inline-flex items-center gap-1 text-[0.71875rem] text-muted hover:text-ink">
             <SlidersHorizontal size={12} aria-hidden /> FFT settings
           </button>
         ) : null}
@@ -156,7 +156,7 @@ export function SpectrumToolbar({ m }: { m: Measurements }) {
           </div>
           <div>
             <ToggleField label="Mark un-padded DFT bins" path="analysis.spectrum.showRawBins" tip="rawBins" />
-            <p className="text-[11px] text-muted">
+            <p className="text-[0.6875rem] text-muted">
               Bin spacing {formatEngineering(m.binSpacing, 'Hz')} (padded) vs {formatEngineering(m.recordBinSpacing, 'Hz')} (record). More FFT samples ≠ more information.
             </p>
             <ToggleField label="Centered (fftshift)" path="analysis.spectrum.centered" tip="centered" />

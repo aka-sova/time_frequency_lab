@@ -76,6 +76,11 @@
   --color-sec-sampling: #0f8a99;
 }
 
+/* --ui-scale is the user's text-size setting (header +/- buttons); all rem sizes follow it. */
+html {
+  font-size: calc(100% * var(--ui-scale, 1));
+}
+
 html,
 body {
   background: var(--color-bg);
@@ -84,7 +89,7 @@ body {
 
 body {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 0.8125rem; /* 13px at 100 % */
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
 }

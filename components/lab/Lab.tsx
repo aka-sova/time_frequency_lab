@@ -16,6 +16,7 @@ import StatusBar from '@/components/education/StatusBar';
 import Workspace from '@/components/workspace/Workspace';
 import ErrorBoundary from '@/components/layout/ErrorBoundary';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
+import { FontSizeProvider } from '@/components/layout/FontSizeProvider';
 import { generateSignal } from '@/lib/dsp/signals';
 import { computeMeasurements, computeSpectra } from '@/lib/dsp/analyze';
 import { collectWarnings, type LabWarning } from '@/lib/dsp/warnings';
@@ -142,7 +143,7 @@ function LabInner() {
           undoLabel={st.undo?.label ?? null}
           onUndo={st.doUndo}
         />
-        <main className="grid lg:grid-cols-[340px_minmax(0,1fr)]">
+        <main className="grid lg:grid-cols-[21.25rem_minmax(0,1fr)]">
           {/* On desktop the controls take the height of the plot column (absolute inner scroller),
               so they never stretch the grid row and leave a gap under the spectrum. */}
           <aside className="relative order-2 border-r border-line bg-panel lg:order-1" aria-label="Signal configuration">
@@ -195,8 +196,8 @@ function LabInner() {
         />
         </ErrorBoundary>
         <footer className="border-t border-line bg-panel px-4 py-5">
-          <p className="mx-auto max-w-4xl text-center text-[13px] leading-relaxed text-ink-2">{STATEMENT}</p>
-          <p className="mt-2 text-center text-[11px] text-muted">
+          <p className="mx-auto max-w-4xl text-center text-[0.8125rem] leading-relaxed text-ink-2">{STATEMENT}</p>
+          <p className="mt-2 text-center text-[0.6875rem] text-muted">
             Educational DSP/RF visualization — normalized amplitudes; not an operational effects simulator. All values are computed in your browser from the generated waveform.
           </p>
         </footer>
@@ -207,8 +208,10 @@ function LabInner() {
 
 export default function Lab() {
   return (
-    <ThemeProvider>
-      <LabInner />
-    </ThemeProvider>
+    <FontSizeProvider>
+      <ThemeProvider>
+        <LabInner />
+      </ThemeProvider>
+    </FontSizeProvider>
   );
 }

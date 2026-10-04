@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import 'katex/dist/katex.min.css';
 import './globals.css';
 import { THEME_INIT_SCRIPT } from '@/components/layout/themeScript';
+import { FONT_SCALE_INIT_SCRIPT } from '@/lib/ui/fontScale';
 
 export const metadata: Metadata = {
   title: 'Time–Frequency Lab',
@@ -27,10 +28,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // data-theme is set by the inline script before hydration, hence suppressHydrationWarning.
+    // data-theme and the --ui-scale style are set by inline scripts before hydration, hence suppressHydrationWarning.
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: FONT_SCALE_INIT_SCRIPT }} />
       </head>
       <body>{children}</body>
     </html>

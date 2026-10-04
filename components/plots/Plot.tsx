@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Config, Data, Layout, PlotlyHTMLElement } from 'plotly.js-dist-min';
+import { useFontSize } from '@/components/layout/FontSizeProvider';
+import { scalePlotLayout } from '@/lib/ui/fontScale';
 
 type PlotlyModule = typeof import('plotly.js-dist-min');
 
@@ -44,6 +46,8 @@ export default function Plot({ data, layout, config, className, height, ariaLabe
   const handlers = useRef({ onRelayout, onClick });
   const bound = useRef(false);
   const [failed, setFailed] = useState(false);
+  const { scale } = useFontSize();
+  const scaledLayout = useMemo(() => scalePlotLayout(layout, scale), [layout, scale]);
 
   useEffect(() => {
     handlers.current = { onRelayout, onClick };
@@ -60,7 +64,7 @@ export default function Plot({ data, layout, config, className, height, ariaLabe
           toImageButtonOptions: { format: 'png', filename: filename ?? 'time-frequency-lab', scale: 2 },
           ...config,
         };
-        return P.react(el, data, { ...layout, height, autosize: true }, cfg).then((gd: PlotlyHTMLElement) => {
+        return P.react(el, data, { ...scaledLayout, height, autosize: true }, cfg).then((gd: PlotlyHTMLElement) => {
           if (bound.current) return;
           bound.current = true;
           gd.on('plotly_relayout', (e) => handlers.current.onRelayout?.(e as unknown as RelayoutEvent));
@@ -74,7 +78,7 @@ export default function Plot({ data, layout, config, className, height, ariaLabe
     return () => {
       alive = false;
     };
-  }, [data, layout, config, height, filename]);
+  }, [data, scaledLayout, config, height, filename]);
 
   useEffect(() => {
     const el = ref.current;

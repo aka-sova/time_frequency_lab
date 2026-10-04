@@ -70,7 +70,7 @@ export default function PowerPanel({ signal }: { signal: SignalResult }) {
 
   if (!ctx || !calc) {
     return (
-      <div className="max-w-xl text-[12.5px] text-ink-2">
+      <div className="max-w-xl text-[0.78125rem] text-ink-2">
         <p className="mb-2">Power and energy need a physical amplitude. The waveform is currently in normalized units.</p>
         <div className="flex gap-2">
           <SmallButton onClick={() => lab.update('signal.amplitudeUnit', 'V')}>Use volts across a load</SmallButton>
@@ -152,7 +152,7 @@ export default function PowerPanel({ signal }: { signal: SignalResult }) {
           </tbody>
         </table>
         <div className="mt-3 border-t border-line pt-2">
-          <p className="mb-1 text-[11px] uppercase tracking-wider text-muted">Custom</p>
+          <p className="mb-1 text-[0.6875rem] uppercase tracking-wider text-muted">Custom</p>
           <Segmented
             size="xs"
             ariaLabel="Width basis"
@@ -180,7 +180,7 @@ export default function PowerPanel({ signal }: { signal: SignalResult }) {
               onChange={(scope) => setCustom({ ...custom, scope })}
             />
           ) : null}
-          <p className="tabular mt-2 font-mono text-[13px] text-ink">
+          <p className="tabular mt-2 font-mono text-[0.8125rem] text-ink">
             {calc.customRes.valid ? `${formatEngineering(calc.customRes.width, 's')}  (${formatNumber(100 * calc.customRes.energyFraction, 3)} % of E)` : <span className="text-muted">{calc.customRes.error}</span>}
           </p>
         </div>

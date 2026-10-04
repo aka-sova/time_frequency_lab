@@ -20,8 +20,8 @@ const ENVELOPE_TEX: Record<SignalConfig['pulse']['envelope'], { a: string; A: st
 
 function Eq({ label, tex }: { label: string; tex: string }) {
   return (
-    <div className="grid items-center gap-x-4 border-b border-line/60 py-1.5 sm:grid-cols-[180px_minmax(0,1fr)]">
-      <span className="text-[12px] text-muted">{label}</span>
+    <div className="grid items-center gap-x-4 border-b border-line/60 py-1.5 sm:grid-cols-[11.25rem_minmax(0,1fr)]">
+      <span className="text-[0.75rem] text-muted">{label}</span>
       <Tex display>{tex}</Tex>
     </div>
   );
@@ -80,7 +80,7 @@ export default function MathPanel() {
 
   return (
     <div>
-      <p className="mb-2 text-[12px] text-ink-2">Equations for the current configuration (they update with the toggles). Convention: ordinary frequency f, X(f) = ∫x(t)e^(−j2πft)dt.</p>
+      <p className="mb-2 text-[0.75rem] text-ink-2">Equations for the current configuration (they update with the toggles). Convention: ordinary frequency f, X(f) = ∫x(t)e^(−j2πft)dt.</p>
       {parts.map((p) => (
         <Eq key={p.label} {...p} />
       ))}

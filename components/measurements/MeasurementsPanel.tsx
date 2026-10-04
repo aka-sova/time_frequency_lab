@@ -37,8 +37,8 @@ const ROWS: { key: keyof Omit<BandSet, 'rms' | 'peakFrequency' | 'peakMagnitude'
 function Card({ title, children, className = '' }: { title: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={`min-w-0 rounded-sm border border-line bg-surface ${className}`}>
-      <h3 className="border-b border-line px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-2">{title}</h3>
-      <div className="p-3 text-[12px]">{children}</div>
+      <h3 className="border-b border-line px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-2">{title}</h3>
+      <div className="p-3 text-[0.75rem]">{children}</div>
     </div>
   );
 }
@@ -115,7 +115,7 @@ export default function MeasurementsPanel({ signal, m }: { signal: SignalResult;
         </p>
         <table className="w-full">
           <thead>
-            <tr className="text-[11px] text-muted">
+            <tr className="text-[0.6875rem] text-muted">
               <th className="text-left font-normal">Definition</th>
               {train ? <th className="text-right font-normal">Single-pulse envelope</th> : null}
               <th className="text-right font-normal">{train ? 'Full train (lines)' : 'Value'}</th>
@@ -128,14 +128,14 @@ export default function MeasurementsPanel({ signal, m }: { signal: SignalResult;
                 <td className="py-1 pr-2 text-ink-2">{r.label}</td>
                 {train ? <td className="tabular py-1 text-right font-mono text-ink">{bandText(m.single![r.key])}</td> : null}
                 <td className="tabular py-1 text-right font-mono text-ink">{bandText(m.full[r.key])}</td>
-                {!train ? <td className="tabular py-1 pl-2 text-right font-mono text-[11px] text-muted">{edgesText(m.full[r.key])}</td> : null}
+                {!train ? <td className="tabular py-1 pl-2 text-right font-mono text-[0.6875rem] text-muted">{edgesText(m.full[r.key])}</td> : null}
               </tr>
             ))}
             <tr className="border-b border-line/60" title="σ_f from |X(f)|²">
               <td className="py-1 pr-2 text-ink-2">RMS σ_f</td>
               {train ? <td className="tabular py-1 text-right font-mono text-ink">{formatEngineering(m.single!.rms.sigma, 'Hz')}</td> : null}
               <td className="tabular py-1 text-right font-mono text-ink">{formatEngineering(m.full.rms.sigma, 'Hz')}</td>
-              {!train ? <td className="tabular py-1 pl-2 text-right font-mono text-[11px] text-muted">{m.kind === 'bandpass' ? `centroid ${formatEngineering(m.full.rms.centroid, 'Hz', 4)}` : 'about 0 Hz'}</td> : null}
+              {!train ? <td className="tabular py-1 pl-2 text-right font-mono text-[0.6875rem] text-muted">{m.kind === 'bandpass' ? `centroid ${formatEngineering(m.full.rms.centroid, 'Hz', 4)}` : 'about 0 Hz'}</td> : null}
             </tr>
           </tbody>
         </table>
@@ -185,7 +185,7 @@ export default function MeasurementsPanel({ signal, m }: { signal: SignalResult;
       <Card title="Time–bandwidth product & uncertainty">
         <table className="w-full">
           <thead>
-            <tr className="text-[11px] text-muted">
+            <tr className="text-[0.6875rem] text-muted">
               <th className="text-left font-normal">Definition</th>
               <th className="text-right font-normal">Measured</th>
               <th className="text-right font-normal">Gaussian</th>
@@ -199,14 +199,14 @@ export default function MeasurementsPanel({ signal, m }: { signal: SignalResult;
         </table>
         {m.uncertainty.valid ? (
         <div className="mt-3">
-            <div className="flex justify-between text-[11px] text-muted">
+            <div className="flex justify-between text-[0.6875rem] text-muted">
               <span>σ_t = {formatEngineering(m.uncertainty.sigmaT, 's')}</span>
               <span>σ_f = {formatEngineering(m.uncertainty.sigmaF, 'Hz')}</span>
             </div>
             <div className="mt-1 h-2.5 w-full overflow-hidden rounded-sm bg-line" role="meter" aria-valuemin={1} aria-valuemax={5} aria-valuenow={m.uncertainty.normalized} aria-label="σtσf relative to the minimum">
               <div className="h-full bg-s1" style={{ width: `${Math.min(100, (100 * Math.log(Math.max(m.uncertainty.normalized, 1))) / Math.log(5) + 2)}%` }} />
             </div>
-            <p className="mt-1 text-[11.5px] text-ink-2">
+            <p className="mt-1 text-[0.71875rem] text-ink-2">
               <Tex>{'\\sigma_t\\sigma_f \\ge \\tfrac{1}{4\\pi}'}</Tex> — measured {formatNumber(m.uncertainty.normalized, 4)}× the minimum
               {m.uncertainty.normalized < 0.97
               ? ' — below the bound: the sampled record no longer represents the waveform (undersampling/aliasing or truncation), so this value is not physical'

@@ -7,9 +7,9 @@ import { useLab } from '@/components/lab/context';
 
 function Cell({ k, v, title }: { k: string; v: string; title?: string }) {
   return (
-    <div className="min-w-[96px] border-r border-line px-3 py-1.5 last:border-r-0" title={title}>
-      <div className="text-[10.5px] uppercase tracking-wider text-muted">{k}</div>
-      <div className="tabular font-mono text-[13px] text-ink">{v}</div>
+    <div className="min-w-[6rem] border-r border-line px-3 py-1.5 last:border-r-0" title={title}>
+      <div className="text-[0.65625rem] uppercase tracking-wider text-muted">{k}</div>
+      <div className="tabular font-mono text-[0.8125rem] text-ink">{v}</div>
     </div>
   );
 }

@@ -18,18 +18,18 @@ const DISCOVERIES = [
 export default function ExperimentsPanel() {
   const lab = useLab();
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18.75rem]">
       <ol className="grid gap-2 md:grid-cols-2">
         {GUIDED_EXPERIMENTS.map((e, i) => (
-          <li key={e.id} className="rounded-sm border border-line bg-surface p-3 text-[12.5px]">
+          <li key={e.id} className="rounded-sm border border-line bg-surface p-3 text-[0.78125rem]">
             <div className="flex items-center gap-2">
-              <span className="tabular font-mono text-[11px] text-muted">Experiment {i + 1}</span>
+              <span className="tabular font-mono text-[0.6875rem] text-muted">Experiment {i + 1}</span>
               <h3 className="font-semibold text-ink">{e.title}</h3>
             </div>
             <p className="mt-1 text-ink-2">{e.instruction}</p>
-            <p className="mt-1 text-[11.5px] text-muted">Control: {e.control}</p>
+            <p className="mt-1 text-[0.71875rem] text-muted">Control: {e.control}</p>
             <details className="mt-1">
-              <summary className="cursor-pointer text-[11.5px] text-accent-strong">Expected observation</summary>
+              <summary className="cursor-pointer text-[0.71875rem] text-accent-strong">Expected observation</summary>
               <p className="mt-1 text-ink-2">{e.expected}</p>
             </details>
             <button
@@ -38,15 +38,15 @@ export default function ExperimentsPanel() {
                 lab.applyPreset(e.preset);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="mt-2 inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[11.5px] text-ink-2 hover:text-ink"
+              className="mt-2 inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[0.71875rem] text-ink-2 hover:text-ink"
             >
               <FlaskConical size={12} aria-hidden /> Load setup
             </button>
           </li>
         ))}
       </ol>
-      <aside className="rounded-sm border border-line bg-surface p-3 text-[12.5px]">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-ink-2">What you should discover</h3>
+      <aside className="rounded-sm border border-line bg-surface p-3 text-[0.78125rem]">
+        <h3 className="text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-2">What you should discover</h3>
         <ul className="mt-2 space-y-1">
           {DISCOVERIES.map(([a, b]) => (
             <li key={a} className="flex gap-2">
@@ -58,7 +58,7 @@ export default function ExperimentsPanel() {
         <p className="mt-3 border-t border-line pt-2 text-ink">
           Short time localization ⇔ broad frequency content — a property of the waveform and of Fourier analysis, not an artifact of digital sampling.
         </p>
-        <p className="mt-2 text-[11.5px] text-muted">Tip: use “Isolate” in a control section to reset unrelated parameters, and the lock icons to keep values fixed when switching presets.</p>
+        <p className="mt-2 text-[0.71875rem] text-muted">Tip: use “Isolate” in a control section to reset unrelated parameters, and the lock icons to keep values fixed when switching presets.</p>
       </aside>
     </div>
   );

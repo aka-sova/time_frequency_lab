@@ -30,7 +30,7 @@ export function InfoTip({ tip, label }: { tip?: string; label: string }) {
       <span
         id={id}
         role="tooltip"
-        className="pointer-events-none invisible absolute left-0 right-0 top-full z-30 mt-1 rounded border border-line-strong bg-raised px-2.5 py-2 text-[12px] leading-snug text-ink-2 opacity-0 shadow-lg transition-opacity group-focus-within/tip:visible group-focus-within/tip:opacity-100 group-hover/tip:visible group-hover/tip:opacity-100"
+        className="pointer-events-none invisible absolute left-0 right-0 top-full z-30 mt-1 rounded border border-line-strong bg-raised px-2.5 py-2 text-[0.75rem] leading-snug text-ink-2 opacity-0 shadow-lg transition-opacity group-focus-within/tip:visible group-focus-within/tip:opacity-100 group-hover/tip:visible group-hover/tip:opacity-100"
       >
         {text}
       </span>
@@ -58,7 +58,7 @@ export function LockButton({ path }: { path: string }) {
 export function FieldLabel({ htmlFor, label, tip, lockPath, right }: { htmlFor?: string; label: ReactNode; tip?: string; lockPath?: string; right?: ReactNode }) {
   return (
     <div className="flex min-h-5 items-center gap-1">
-      <label htmlFor={htmlFor} className="text-[12px] text-ink-2">
+      <label htmlFor={htmlFor} className="text-[0.75rem] text-ink-2">
         {label}
       </label>
       <InfoTip tip={tip} label={typeof label === 'string' ? label : 'parameter'} />
@@ -179,14 +179,14 @@ export function EngineeringInput({ label, path, kind, min, max, log = true, tip,
             }
           }}
           aria-invalid={error}
-          className={`tabular w-[74px] rounded-sm border bg-surface px-1.5 py-0.5 text-right font-mono text-[12px] text-ink disabled:opacity-50 ${error ? 'border-critical' : 'border-line-strong'}`}
+          className={`tabular w-[4.625rem] rounded-sm border bg-surface px-1.5 py-0.5 text-right font-mono text-[0.75rem] text-ink disabled:opacity-50 ${error ? 'border-critical' : 'border-line-strong'}`}
         />
         <select
           value={unit.label}
           disabled={disabled}
           onChange={(e) => setUserUnit(units.find((u) => u.label === e.target.value) ?? null)}
           aria-label="Unit"
-          className="w-[62px] rounded-sm border border-line-strong bg-surface px-1 py-0.5 text-[12px] text-ink-2 disabled:opacity-50"
+          className="w-[3.875rem] rounded-sm border border-line-strong bg-surface px-1 py-0.5 text-[0.75rem] text-ink-2 disabled:opacity-50"
         >
           {units.map((u) => (
             <option key={u.label} value={u.label}>
@@ -195,8 +195,8 @@ export function EngineeringInput({ label, path, kind, min, max, log = true, tip,
           ))}
         </select>
       </div>
-      {error ? <p className="mt-0.5 text-[11px] text-critical">Not a valid value. Try e.g. “2.5 GHz”, “10 ns”, “1e-9”.</p> : null}
-      {hint ? <div className="mt-0.5 text-[11px] text-muted">{hint}</div> : null}
+      {error ? <p className="mt-0.5 text-[0.6875rem] text-critical">Not a valid value. Try e.g. “2.5 GHz”, “10 ns”, “1e-9”.</p> : null}
+      {hint ? <div className="mt-0.5 text-[0.6875rem] text-muted">{hint}</div> : null}
     </div>
   );
 }
@@ -267,11 +267,11 @@ export function NumberField({ label, path, value: vProp, onChange, min, max, ste
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => e.key === 'Enter' && commit()}
-          className="tabular w-[74px] rounded-sm border border-line-strong bg-surface px-1.5 py-0.5 text-right font-mono text-[12px] text-ink disabled:opacity-50"
+          className="tabular w-[4.625rem] rounded-sm border border-line-strong bg-surface px-1.5 py-0.5 text-right font-mono text-[0.75rem] text-ink disabled:opacity-50"
         />
-        <span className="w-[62px] text-[12px] text-muted">{suffix}</span>
+        <span className="w-[3.875rem] text-[0.75rem] text-muted">{suffix}</span>
       </div>
-      {hint ? <div className="mt-0.5 text-[11px] text-muted">{hint}</div> : null}
+      {hint ? <div className="mt-0.5 text-[0.6875rem] text-muted">{hint}</div> : null}
     </div>
   );
 }
@@ -294,7 +294,7 @@ export function ToggleField({ label, path, tip, level = 'basic', disabled, check
       >
         <span className={`absolute top-[2px] h-[10px] w-[10px] rounded-full bg-ink transition-[left] ${checked ? 'left-[14px]' : 'left-[2px]'}`} />
       </button>
-      <label htmlFor={id} className="text-[12px] text-ink-2">
+      <label htmlFor={id} className="text-[0.75rem] text-ink-2">
         {label}
       </label>
       <InfoTip tip={tip} label={typeof label === 'string' ? label : 'option'} />
@@ -341,7 +341,7 @@ export function SelectField<T extends string | number>({
           if (onChange) onChange(opt.value);
           else lab.update(path!, opt.value);
         }}
-        className="mt-0.5 w-full rounded-sm border border-line-strong bg-surface px-1.5 py-1 text-[12px] text-ink disabled:opacity-50"
+        className="mt-0.5 w-full rounded-sm border border-line-strong bg-surface px-1.5 py-1 text-[0.75rem] text-ink disabled:opacity-50"
       >
         {options.map((o) => (
           <option key={String(o.value)} value={String(o.value)}>
@@ -378,7 +378,7 @@ export function Segmented<T extends string>({
             aria-checked={active}
             title={o.title}
             onClick={() => onChange(o.value)}
-            className={`${size === 'xs' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-1 text-[12px]'} border-l border-line-strong first:border-l-0 ${
+            className={`${size === 'xs' ? 'px-1.5 py-0.5 text-[0.6875rem]' : 'px-2 py-1 text-[0.75rem]'} border-l border-line-strong first:border-l-0 ${
               active ? 'bg-raised text-ink' : 'bg-transparent text-muted hover:text-ink-2'
             }`}
           >
@@ -399,7 +399,7 @@ export function SmallButton({ children, onClick, title, ariaLabel, active, disab
       aria-label={ariaLabel}
       aria-pressed={active}
       disabled={disabled}
-      className={`inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[11px] disabled:opacity-40 ${
+      className={`inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[0.6875rem] disabled:opacity-40 ${
         active ? 'border-accent/70 bg-accent/15 text-ink' : 'border-line-strong text-ink-2 hover:border-muted hover:text-ink'
       }`}
     >
@@ -410,7 +410,7 @@ export function SmallButton({ children, onClick, title, ariaLabel, active, disab
 
 export function Readout({ label, value, title }: { label: ReactNode; value: ReactNode; title?: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-2 py-0.5 text-[12px]" title={title}>
+    <div className="flex items-baseline justify-between gap-2 py-0.5 text-[0.75rem]" title={title}>
       <span className="text-muted">{label}</span>
       <span className="tabular font-mono text-ink">{value}</span>
     </div>

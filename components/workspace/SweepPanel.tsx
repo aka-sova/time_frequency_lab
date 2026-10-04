@@ -95,8 +95,8 @@ export default function SweepPanel() {
   }, [result, metric, metricInfo, log, C]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-      <div className="space-y-2 text-[12px]">
+    <div className="grid gap-4 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
+      <div className="space-y-2 text-[0.75rem]">
         <label className="block">
           <span className="text-ink-2">Parameter</span>
           <select
@@ -122,12 +122,12 @@ export default function SweepPanel() {
           <label className="block">
             <span className="text-ink-2">Start ({param.unit || '—'})</span>
             <input value={start} onChange={(e) => setStart(e.target.value)} className="tabular mt-0.5 w-full rounded-sm border border-line-strong bg-surface px-1.5 py-1 font-mono" />
-            <span className="text-[11px] text-muted">{fmt(parseValue(start, param.unit), param.unit)}</span>
+            <span className="text-[0.6875rem] text-muted">{fmt(parseValue(start, param.unit), param.unit)}</span>
           </label>
           <label className="block">
             <span className="text-ink-2">Stop ({param.unit || '—'})</span>
             <input value={stop} onChange={(e) => setStop(e.target.value)} className="tabular mt-0.5 w-full rounded-sm border border-line-strong bg-surface px-1.5 py-1 font-mono" />
-            <span className="text-[11px] text-muted">{fmt(parseValue(stop, param.unit), param.unit)}</span>
+            <span className="text-[0.6875rem] text-muted">{fmt(parseValue(stop, param.unit), param.unit)}</span>
           </label>
         </div>
         <label className="block">
@@ -150,18 +150,18 @@ export default function SweepPanel() {
         <SmallButton onClick={run} disabled={locked}>
           <Play size={12} aria-hidden /> Run sweep
         </SmallButton>
-        {locked ? <p className="text-[11px] text-warn">This parameter is locked and cannot be swept.</p> : null}
-        {error ? <p className="text-[11px] text-critical">{error}</p> : null}
-        <p className="text-[11px] text-muted">
+        {locked ? <p className="text-[0.6875rem] text-warn">This parameter is locked and cannot be swept.</p> : null}
+        {error ? <p className="text-[0.6875rem] text-critical">{error}</p> : null}
+        <p className="text-[0.6875rem] text-muted">
           All other parameters stay at their current values (sampling included). Each step generates the waveform and measures it — values are never interpolated or assumed.
           {result ? ` Last run: ${result.rows.length} steps in ${result.ms.toFixed(0)} ms.` : ''}
         </p>
       </div>
       <div className="min-w-0">
-        {plot ?? <p className="text-[12px] text-muted">Choose a parameter and run the sweep. Suggested: pulse width vs bandwidth, rise time vs −40 dB bandwidth, PRF vs comb spacing, number of pulses vs −3 dB line width, phase noise vs comb contrast.</p>}
+        {plot ?? <p className="text-[0.75rem] text-muted">Choose a parameter and run the sweep. Suggested: pulse width vs bandwidth, rise time vs −40 dB bandwidth, PRF vs comb spacing, number of pulses vs −3 dB line width, phase noise vs comb contrast.</p>}
         {result ? (
           <div className="mt-2 max-h-56 overflow-auto thin-scroll">
-            <table className="w-full text-[11.5px]">
+            <table className="w-full text-[0.71875rem]">
               <thead className="sticky top-0 bg-panel">
                 <tr className="text-muted">
                   <th className="py-1 text-left font-normal">{SWEEP_PARAMETERS.find((q) => q.id === result.paramId)!.label}</th>
