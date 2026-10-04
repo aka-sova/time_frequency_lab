@@ -52,7 +52,7 @@ export default function Workspace({ tab, setTab, signal, measurements, compare, 
             aria-selected={tab === t.id}
             aria-controls={`panel-${t.id}`}
             onClick={() => setTab(t.id)}
-            className={`whitespace-nowrap border-b-2 px-3 py-2 text-[12.5px] ${tab === t.id ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink-2'}`}
+            className={`whitespace-nowrap border-b-2 px-3 py-2 text-[0.78125rem] ${tab === t.id ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink-2'}`}
           >
             {t.label}
             {t.id === 'ab' && compare ? <span className="ml-1 text-s5">●</span> : null}

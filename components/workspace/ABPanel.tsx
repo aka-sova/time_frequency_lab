@@ -52,7 +52,7 @@ export default function ABPanel({ a, live, onSave, onClear, onSwap }: { a: Side 
   useLab();
   if (!a) {
     return (
-      <div className="max-w-2xl text-[12.5px] text-ink-2">
+      <div className="max-w-2xl text-[0.78125rem] text-ink-2">
         <p>
           Save the current configuration as <strong className="text-s5">A</strong>, then change parameters. The live configuration becomes <strong className="text-s1">B</strong>; both are overlaid in the time and
           frequency plots (A dotted) and every difference is listed here.
@@ -72,9 +72,9 @@ export default function ABPanel({ a, live, onSave, onClear, onSwap }: { a: Side 
         <SmallButton onClick={onClear}>Clear A</SmallButton>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full max-w-3xl text-[12px]">
+        <table className="w-full max-w-3xl text-[0.75rem]">
           <thead>
-            <tr className="border-b border-line text-[11px] text-muted">
+            <tr className="border-b border-line text-[0.6875rem] text-muted">
               <th className="py-1 text-left font-normal">Quantity</th>
               <th className="py-1 text-left font-normal">A (saved, dotted)</th>
               <th className="py-1 text-left font-normal">B (live)</th>

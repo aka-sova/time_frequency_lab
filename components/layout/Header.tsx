@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Check, ChevronDown, Download, GitCompareArrows, Link2, Moon, RotateCcw, Sun, Undo2, Upload } from 'lucide-react';
+import { Check, ChevronDown, Download, GitCompareArrows, Link2, Minus, Moon, Plus, RotateCcw, Sun, Undo2, Upload } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
+import { useFontSize } from './FontSizeProvider';
+import { FONT_SCALE_MAX, FONT_SCALE_MIN, formatScale } from '@/lib/ui/fontScale';
 import type { UiMode } from '@/types/signal';
 import { PRESETS, PRESET_CATEGORIES } from '@/lib/presets/presets';
 import { Segmented } from '@/components/controls/primitives';
@@ -30,7 +32,7 @@ function Menu({ label, icon, children }: { label: string; icon: ReactNode; child
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[12px] text-ink-2 hover:text-ink"
+        className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[0.75rem] text-ink-2 hover:text-ink"
       >
         {icon}
         <span className="hidden sm:inline">{label}</span>
@@ -47,9 +49,9 @@ function Menu({ label, icon, children }: { label: string; icon: ReactNode; child
 
 function MenuItem({ onClick, children, hint }: { onClick: () => void; children: ReactNode; hint?: string }) {
   return (
-    <button type="button" role="menuitem" onClick={onClick} className="block w-full px-3 py-1.5 text-left text-[12px] text-ink-2 hover:bg-line hover:text-ink">
+    <button type="button" role="menuitem" onClick={onClick} className="block w-full px-3 py-1.5 text-left text-[0.75rem] text-ink-2 hover:bg-line hover:text-ink">
       {children}
-      {hint ? <span className="block text-[11px] text-muted">{hint}</span> : null}
+      {hint ? <span className="block text-[0.6875rem] text-muted">{hint}</span> : null}
     </button>
   );
 }
@@ -71,6 +73,34 @@ export interface HeaderProps {
   onUndo: () => void;
 }
 
+/** Text size: − / + in 10 % steps (50–300 %), click the percentage to reset. Scales UI text and plot fonts. */
+function FontSizeControl() {
+  const { scale, increase, decrease, reset } = useFontSize();
+  const btn = 'inline-flex h-6 w-6 items-center justify-center text-ink-2 hover:text-ink disabled:opacity-40 disabled:hover:text-ink-2';
+  return (
+    <div className="inline-flex items-center gap-1.5" role="group" aria-label="Text size">
+      <span className="hidden text-[0.75rem] text-ink-2 md:inline">Text size</span>
+      <div className="inline-flex items-center overflow-hidden rounded-sm border border-line-strong">
+        <button type="button" onClick={decrease} disabled={scale <= FONT_SCALE_MIN} className={btn} aria-label="Decrease text size" title="Decrease text size">
+          <Minus size={13} aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={reset}
+          className="tabular min-w-[3.25rem] border-x border-line-strong px-1 text-center text-[0.75rem] text-ink-2 hover:text-ink"
+          aria-label={`Text size ${formatScale(scale)}. Click to reset to 100%`}
+          title="Text size (click to reset to 100%)"
+        >
+          {formatScale(scale)}
+        </button>
+        <button type="button" onClick={increase} disabled={scale >= FONT_SCALE_MAX} className={btn} aria-label="Increase text size" title="Increase text size">
+          <Plus size={13} aria-hidden />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
   const toLight = theme === 'dark';
@@ -78,7 +108,7 @@ function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[12px] text-ink-2 hover:text-ink"
+      className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[0.75rem] text-ink-2 hover:text-ink"
       aria-label={toLight ? 'Switch to light theme' : 'Switch to dark theme'}
       title={toLight ? 'Switch to light theme' : 'Switch to dark theme'}
     >
@@ -95,8 +125,8 @@ export default function Header(p: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-bg px-4 py-2">
       <div className="mr-auto min-w-0">
-        <h1 className="text-[15px] font-semibold tracking-tight text-ink">Time–Frequency Lab</h1>
-        <p className="truncate text-[11.5px] text-muted">Explore how waveform structure in time determines spectral structure in frequency.</p>
+        <h1 className="text-[0.9375rem] font-semibold tracking-tight text-ink">Time–Frequency Lab</h1>
+        <p className="truncate text-[0.71875rem] text-muted">Explore how waveform structure in time determines spectral structure in frequency.</p>
       </div>
 
       <Segmented<UiMode>
@@ -110,12 +140,12 @@ export default function Header(p: HeaderProps) {
         ]}
       />
 
-      <label className="flex items-center gap-1.5 text-[12px] text-ink-2">
+      <label className="flex items-center gap-1.5 text-[0.75rem] text-ink-2">
         <span className="hidden md:inline">Preset</span>
         <select
           value={p.presetId}
           onChange={(e) => p.onPreset(e.target.value)}
-          className="max-w-[230px] rounded-sm border border-line-strong bg-surface px-1.5 py-1 text-[12px] text-ink"
+          className="max-w-[14.375rem] rounded-sm border border-line-strong bg-surface px-1.5 py-1 text-[0.75rem] text-ink"
           aria-label="Load preset"
         >
           {PRESET_CATEGORIES.map((c) => (
@@ -134,7 +164,7 @@ export default function Header(p: HeaderProps) {
         <button
           type="button"
           onClick={p.hasA ? p.onClearA : p.onSaveA}
-          className={`inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[12px] ${p.hasA ? 'border-s5 text-ink' : 'border-line-strong text-ink-2 hover:text-ink'}`}
+          className={`inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[0.75rem] ${p.hasA ? 'border-s5 text-ink' : 'border-line-strong text-ink-2 hover:text-ink'}`}
           title={p.hasA ? 'Remove the saved A configuration' : 'Save the current configuration as A, then modify to compare (B = live)'}
         >
           <GitCompareArrows size={13} aria-hidden />
@@ -147,7 +177,7 @@ export default function Header(p: HeaderProps) {
             setCopied(ok ? 'ok' : 'fail');
             setTimeout(() => setCopied(null), 1800);
           }}
-          className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[12px] text-ink-2 hover:text-ink"
+          className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[0.75rem] text-ink-2 hover:text-ink"
           title="Copy a shareable link to this experiment"
         >
           {copied === 'ok' ? <Check size={13} aria-hidden /> : <Link2 size={13} aria-hidden />}
@@ -168,7 +198,7 @@ export default function Header(p: HeaderProps) {
                   <Upload size={12} aria-hidden /> Import configuration JSON…
                 </span>
               </MenuItem>
-              <p className="border-t border-line px-3 py-1.5 text-[11px] text-muted">PNG: use the camera icon in each plot’s toolbar.</p>
+              <p className="border-t border-line px-3 py-1.5 text-[0.6875rem] text-muted">PNG: use the camera icon in each plot’s toolbar.</p>
             </>
           )}
         </Menu>
@@ -210,13 +240,14 @@ export default function Header(p: HeaderProps) {
               >
                 Reset experiment
               </MenuItem>
-              <p className="border-t border-line px-3 py-1.5 text-[11px] text-muted">Each control section also has its own reset (↺). Resets can be undone.</p>
+              <p className="border-t border-line px-3 py-1.5 text-[0.6875rem] text-muted">Each control section also has its own reset (↺). Resets can be undone.</p>
             </>
           )}
         </Menu>
+        <FontSizeControl />
         <ThemeToggle />
         {p.undoLabel ? (
-          <button type="button" onClick={p.onUndo} className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[12px] text-ink-2 hover:text-ink" title={`Undo: ${p.undoLabel}`}>
+          <button type="button" onClick={p.onUndo} className="inline-flex items-center gap-1 rounded-sm border border-line-strong px-2 py-1 text-[0.75rem] text-ink-2 hover:text-ink" title={`Undo: ${p.undoLabel}`}>
             <Undo2 size={13} aria-hidden />
             <span className="hidden lg:inline">Undo</span>
           </button>

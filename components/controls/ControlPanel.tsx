@@ -64,7 +64,7 @@ export default function ControlPanel() {
           tip="signalType"
           options={SIGNAL_TYPES.map((t) => ({ value: t.id, label: t.label }))}
         />
-        <p className="pb-1 text-[11px] text-muted">{SIGNAL_TYPES.find((t) => t.id === s.signalType)?.description}</p>
+        <p className="pb-1 text-[0.6875rem] text-muted">{SIGNAL_TYPES.find((t) => t.id === s.signalType)?.description}</p>
         {s.amplitudeUnit === 'normalized' ? (
           <NumberField label="Amplitude A" path="signal.amplitude" min={0} max={2} step={0.01} suffix="norm." tip="amplitude" lock />
         ) : (
@@ -82,7 +82,7 @@ export default function ControlPanel() {
         )}
         <Gate level="advanced">
           <div className="flex items-center justify-between py-1">
-            <span className="text-[12px] text-ink-2">Amplitude unit</span>
+            <span className="text-[0.75rem] text-ink-2">Amplitude unit</span>
             <Segmented
               size="xs"
               ariaLabel="Amplitude unit"

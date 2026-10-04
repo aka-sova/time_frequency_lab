@@ -55,8 +55,8 @@ export default function LeakagePanel() {
 
   const frac = bin - Math.floor(bin);
   return (
-    <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-      <div className="space-y-2 text-[12px]">
+    <div className="grid gap-4 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
+      <div className="space-y-2 text-[0.75rem]">
         <p className="text-ink-2">
           A single tone observed for N samples. Its frequency is given in DFT bins (cycles per record). Integer bins: an exact number of periods fits the record and the rectangular window shows no leakage.
           Fractional bins: the periodic extension is discontinuous and energy leaks into all bins.
@@ -68,10 +68,10 @@ export default function LeakagePanel() {
           <input type="range" min={4} max={20} step={0.05} value={bin} onChange={(e) => setBin(Number(e.target.value))} className="w-full" aria-label="Tone frequency in bins" />
         </label>
         <div className="flex gap-1">
-          <button type="button" className="rounded-sm border border-line-strong px-1.5 py-0.5 text-[11px] text-ink-2" onClick={() => setBin(Math.round(bin))}>
+          <button type="button" className="rounded-sm border border-line-strong px-1.5 py-0.5 text-[0.6875rem] text-ink-2" onClick={() => setBin(Math.round(bin))}>
             On a bin
           </button>
-          <button type="button" className="rounded-sm border border-line-strong px-1.5 py-0.5 text-[11px] text-ink-2" onClick={() => setBin(Math.floor(bin) + 0.5)}>
+          <button type="button" className="rounded-sm border border-line-strong px-1.5 py-0.5 text-[0.6875rem] text-ink-2" onClick={() => setBin(Math.floor(bin) + 0.5)}>
             Between bins
           </button>
         </div>
@@ -138,7 +138,7 @@ export default function LeakagePanel() {
           filename="leakage"
         />
         <div className="mt-2 overflow-x-auto">
-          <table className="w-full text-[11.5px]">
+          <table className="w-full text-[0.71875rem]">
             <thead>
               <tr className="border-b border-line text-muted">
                 <th className="py-1 text-left font-normal">Window</th>
@@ -164,7 +164,7 @@ export default function LeakagePanel() {
               ))}
             </tbody>
           </table>
-          <p className="mt-1 text-[11px] text-muted">Measured numerically from each window’s zero-padded DFT (N = 64, periodic windows).</p>
+          <p className="mt-1 text-[0.6875rem] text-muted">Measured numerically from each window’s zero-padded DFT (N = 64, periodic windows).</p>
         </div>
       </div>
     </div>

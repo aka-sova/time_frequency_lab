@@ -20,7 +20,7 @@ function Cell({ v, unit }: { v: number; unit: 's' | 'amp' }) {
   return <>{Number.isFinite(v) ? (unit === 's' ? formatEngineering(v, 's') : formatNumber(v, 4)) : '—'}</>;
 }
 
-const TD = 'tabular py-1 text-right font-mono text-ink';
+const TD = 'tabular py-1 text-right font-mono text-ink [overflow-wrap:anywhere]';
 
 export default function InstrumentPanel({ signal }: { signal: SignalResult }) {
   const C = usePalette();
@@ -90,7 +90,7 @@ export default function InstrumentPanel({ signal }: { signal: SignalResult }) {
   if (signal.fs < 8 * i.bandwidthHz) warnings.push('The lab sample rate is below 8× the instrument bandwidth: the filter output is less accurate. Raise the sample rate in the Sampling section.');
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="grid gap-3 lg:grid-cols-[20rem_minmax(0,1fr)]">
       <Card title="Instrument settings">
         <EngineeringInput
           label="Analogue bandwidth BW"
@@ -148,7 +148,7 @@ export default function InstrumentPanel({ signal }: { signal: SignalResult }) {
           <Card title="What the instrument reports">
             <table className="w-full">
               <thead>
-                <tr className="text-[11px] text-muted">
+                <tr className="text-[0.6875rem] text-muted">
                   <th className="text-left font-normal">{unit}</th>
                   <th className="text-right font-normal">True</th>
                   <th className="text-right font-normal">Displayed</th>

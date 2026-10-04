@@ -13,8 +13,8 @@ export default function CursorReadout() {
   const df = Math.abs(c.f2 - c.f1);
   return (
     <div className="border-b border-line bg-panel px-4 py-1.5">
-      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[12px]">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-2">Cursors</span>
+      <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-[0.75rem]">
+        <span className="text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-2">Cursors</span>
         <span className="text-muted">
           Δt = <span className="tabular font-mono text-ink">{formatEngineering(dt, 's')}</span>
         </span>
@@ -27,8 +27,8 @@ export default function CursorReadout() {
         <span className="text-muted">
           Δt·Δf = <span className="tabular font-mono text-ink">{formatNumber(dt * df, 4)}</span>
         </span>
-        <span className="text-[11px] text-muted">Drag the yellow lines (click one to activate it) or type values below.</span>
-        <button type="button" className="ml-auto text-[11px] text-muted underline hover:text-ink" onClick={() => update('analysis.cursors.enabled', false)}>
+        <span className="text-[0.6875rem] text-muted">Drag the yellow lines (click one to activate it) or type values below.</span>
+        <button type="button" className="ml-auto text-[0.6875rem] text-muted underline hover:text-ink" onClick={() => update('analysis.cursors.enabled', false)}>
           Hide cursors
         </button>
       </div>

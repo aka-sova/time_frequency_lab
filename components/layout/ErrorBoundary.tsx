@@ -21,7 +21,7 @@ export default class ErrorBoundary extends Component<{ children: ReactNode; labe
   render() {
     if (this.state.error) {
       return (
-        <div role="alert" className="m-3 rounded-sm border border-critical/60 bg-surface p-3 text-[12px] text-ink-2">
+        <div role="alert" className="m-3 rounded-sm border border-critical/60 bg-surface p-3 text-[0.75rem] text-ink-2">
           <strong className="text-ink">{this.props.label} could not be rendered.</strong> {this.state.error.message}
           <button type="button" onClick={() => this.setState({ error: null })} className="ml-2 underline">
             Retry

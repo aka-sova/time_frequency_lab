@@ -158,7 +158,7 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
   return (
     <section className="border-t border-line bg-panel" aria-label="Time–frequency analysis">
       <div className="flex flex-wrap items-center gap-3 px-4 py-2">
-        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-ink-2">Time–frequency analysis</h2>
+        <h2 className="text-[0.75rem] font-semibold uppercase tracking-wider text-ink-2">Time–frequency analysis</h2>
         <Segmented<TfView>
           ariaLabel="Time–frequency view"
           value={view}
@@ -175,34 +175,34 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
         <SmallButton onClick={() => lab.update('analysis.tfRange', { mode: 'full', min: 0, max: 0 })} active={r.mode === 'full'} ariaLabel="Show 0 to Nyquist in the time–frequency view">
           <Maximize2 size={12} aria-hidden /> 0…f_N
         </SmallButton>
-        {stale ? <span className="text-[11px] text-muted">updating…</span> : null}
+        {stale ? <span className="text-[0.6875rem] text-muted">updating…</span> : null}
       </div>
 
       {view === 'compare' ? (
         <div className="grid gap-3 px-4 pb-3 lg:grid-cols-3">
           <figure className="min-w-0">
-            <figcaption className="mb-1 text-[12px] text-ink-2">
+            <figcaption className="mb-1 text-[0.75rem] text-ink-2">
               <strong className="text-ink">Fourier transform</strong> — What frequencies exist in the complete observation? No temporal localization.
             </figcaption>
             {fftColumn}
           </figure>
           <figure className="min-w-0">
-            <figcaption className="mb-1 text-[12px] text-ink-2">
+            <figcaption className="mb-1 text-[0.75rem] text-ink-2">
               <strong className="text-ink">STFT</strong> — What frequencies exist around each time? Fixed resolution (window {formatEngineering(stft?.windowDuration ?? 0, 's')}).
             </figcaption>
             {stftPlot}
           </figure>
           <figure className="min-w-0">
-            <figcaption className="mb-1 text-[12px] text-ink-2">
+            <figcaption className="mb-1 text-[0.75rem] text-ink-2">
               <strong className="text-ink">Wavelet</strong> — What scale/frequency structures occur around each time? Adaptive resolution.
             </figcaption>
             {cwtPlot}
           </figure>
         </div>
       ) : (
-        <div className="grid gap-3 px-4 pb-3 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="grid gap-3 px-4 pb-3 lg:grid-cols-[minmax(0,1fr)_18.75rem]">
           <div className="min-w-0">{view === 'stft' ? stftPlot : cwtPlot}</div>
-          <aside className="text-[12px]">
+          <aside className="text-[0.75rem]">
             {view === 'stft' && stft ? (
               <div>
                 <SelectField
@@ -278,7 +278,7 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
                   <NumberField label="Dynamic range" path="analysis.cwt.dbRange" min={10} max={100} step={5} suffix="dB" tip="dbRange" />
                 </Gate>
                 <div className="mt-2 rounded-sm border border-line bg-surface p-2">
-                  <table className="w-full text-[11.5px]">
+                  <table className="w-full text-[0.71875rem]">
                     <thead>
                       <tr className="text-muted">
                         <th className="text-left font-normal">f</th>
@@ -305,7 +305,7 @@ export default function TimeFrequencyPanel({ signal: liveSignal, spectra }: { si
                 </div>
               </div>
             ) : null}
-            {!allowed(lab.mode, 'advanced') ? <p className="mt-2 text-[11px] text-muted">Switch to Advanced or Expert mode for window and wavelet parameters.</p> : null}
+            {!allowed(lab.mode, 'advanced') ? <p className="mt-2 text-[0.6875rem] text-muted">Switch to Advanced or Expert mode for window and wavelet parameters.</p> : null}
           </aside>
         </div>
       )}

@@ -33,8 +33,8 @@ const MISTAKES: [string, string][] = [
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="min-w-0 rounded-sm border border-line bg-surface">
-      <h3 className="border-b border-line px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-2">{title}</h3>
-      <div className="p-3 text-[12.5px] leading-relaxed text-ink-2">{children}</div>
+      <h3 className="border-b border-line px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-2">{title}</h3>
+      <div className="p-3 text-[0.78125rem] leading-relaxed text-ink-2">{children}</div>
     </div>
   );
 }
@@ -95,7 +95,7 @@ export default function TheoryPanel() {
       </div>
       <Card title="Parameter → effect">
         <div className="overflow-x-auto">
-          <table className="w-full text-[12px]">
+          <table className="w-full text-[0.75rem]">
             <thead>
               <tr className="border-b border-line text-muted">
                 <th className="py-1 text-left font-normal">Parameter</th>

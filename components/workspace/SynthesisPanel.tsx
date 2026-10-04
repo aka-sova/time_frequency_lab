@@ -50,8 +50,8 @@ export default function SynthesisPanel() {
   ];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-      <div className="space-y-2 text-[12px]">
+    <div className="grid gap-4 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
+      <div className="space-y-2 text-[0.75rem]">
         <p className="text-ink-2">
           A periodic pulse (period T) rebuilt from its Fourier-series components. Near the pulse every component is in phase and they add constructively; elsewhere they cancel. The narrower the pulse, the
           more components are needed.
@@ -84,7 +84,7 @@ export default function SynthesisPanel() {
                 type="button"
                 onClick={() => setK(c)}
                 aria-pressed={k === c}
-                className={`rounded-sm border px-2 py-0.5 text-[11.5px] ${k === c ? 'border-accent bg-accent/15 text-ink' : 'border-line-strong text-ink-2'}`}
+                className={`rounded-sm border px-2 py-0.5 text-[0.71875rem] ${k === c ? 'border-accent bg-accent/15 text-ink' : 'border-line-strong text-ink-2'}`}
               >
                 {c}
               </button>

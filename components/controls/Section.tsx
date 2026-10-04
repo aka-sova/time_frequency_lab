@@ -40,7 +40,7 @@ export default function Section({ title, color, level = 'basic', defaultOpen = t
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls={bodyId}
-          className="flex flex-1 items-center gap-1.5 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-2 hover:text-ink"
+          className="flex flex-1 items-center gap-1.5 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-2 hover:text-ink"
         >
           <ChevronDown size={13} className={`text-[color:var(--sec)] transition-transform ${open ? '' : '-rotate-90'}`} aria-hidden />
           <span className="h-2 w-2 shrink-0 rounded-[2px] bg-[color:var(--sec)]" aria-hidden />
@@ -80,7 +80,7 @@ export default function Section({ title, color, level = 'basic', defaultOpen = t
                   key={k}
                   type="button"
                   onClick={() => lab.isolate(k)}
-                  className="inline-flex items-center gap-1 rounded-sm border border-line px-1.5 py-0.5 text-[11px] text-muted hover:border-line-strong hover:text-ink-2"
+                  className="inline-flex items-center gap-1 rounded-sm border border-line px-1.5 py-0.5 text-[0.6875rem] text-muted hover:border-line-strong hover:text-ink-2"
                   title={`Keep the current ${ISOLATE_LABELS[k]} and reset unrelated parameters to a clean reference state`}
                 >
                   <Crosshair size={11} aria-hidden /> Isolate {ISOLATE_LABELS[k]}
@@ -96,5 +96,5 @@ export default function Section({ title, color, level = 'basic', defaultOpen = t
 }
 
 export function Note({ children }: { children: ReactNode }) {
-  return <div className="my-1 rounded-sm border border-line bg-surface/60 px-2 py-1.5 text-[11.5px] leading-snug text-ink-2">{children}</div>;
+  return <div className="my-1 rounded-sm border border-line bg-surface/60 px-2 py-1.5 text-[0.71875rem] leading-snug text-ink-2">{children}</div>;
 }
