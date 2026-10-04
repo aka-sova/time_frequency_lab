@@ -12,9 +12,9 @@ export function Card({ title, children, className = '' }: { title: string; child
 export function Row({ k, v, sub }: { k: ReactNode; v: ReactNode; sub?: ReactNode }) {
   return (
     <tr className="border-b border-line/60 last:border-0">
-      <td className="py-1 pr-3 text-ink-2">{k}</td>
-      <td className="tabular py-1 text-right font-mono text-ink">{v}</td>
-      {sub !== undefined ? <td className="tabular py-1 pl-3 text-right font-mono text-muted">{sub}</td> : null}
+      <td className="py-1 pr-3 text-ink-2 [overflow-wrap:anywhere]">{k}</td>
+      <td className="tabular py-1 text-right font-mono text-ink [overflow-wrap:anywhere]">{v}</td>
+      {sub !== undefined ? <td className="tabular py-1 pl-3 text-right font-mono text-muted [overflow-wrap:anywhere]">{sub}</td> : null}
     </tr>
   );
 }

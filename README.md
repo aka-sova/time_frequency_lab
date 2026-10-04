@@ -99,6 +99,9 @@ The app is a single statically prerendered Next.js page; all computation runs in
   experiments, Fourier-synthesis mode (with a "randomize phases" twist), spectral-leakage laboratory
   with measured window metrics, KaTeX mathematics panel that follows the configuration, theory cards,
   parameter → effect table and a list of common conceptual mistakes.
+- **Text size**: − / + buttons in the header scale all UI text and plot fonts from 50 % to 300 % in 10 % steps
+  (click the percentage to reset). The setting is remembered in the browser. Above ~250 % on a narrow window the
+  page scrolls horizontally, because layout breakpoints do not follow the text scale.
 - **Workflow**: 36 presets (configuration data), Basic/Advanced/Expert modes, *Isolate effect* buttons,
   parameter locks, A/B comparison with difference table, parameter sweeps, per-section reset, undo,
   shareable URL (`?preset=coherent-train&f0=1e9&pw=1e-8&prf=1e6`), CSV/JSON export, JSON import, PNG

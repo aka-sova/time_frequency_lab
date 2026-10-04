@@ -20,7 +20,7 @@ function Cell({ v, unit }: { v: number; unit: 's' | 'amp' }) {
   return <>{Number.isFinite(v) ? (unit === 's' ? formatEngineering(v, 's') : formatNumber(v, 4)) : '—'}</>;
 }
 
-const TD = 'tabular py-1 text-right font-mono text-ink';
+const TD = 'tabular py-1 text-right font-mono text-ink [overflow-wrap:anywhere]';
 
 export default function InstrumentPanel({ signal }: { signal: SignalResult }) {
   const C = usePalette();
