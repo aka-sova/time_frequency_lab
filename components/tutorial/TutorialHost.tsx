@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
-import { Check, ChevronLeft, ChevronRight, GraduationCap, Wand2, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, GraduationCap, GripHorizontal, Wand2, X } from 'lucide-react';
 import { placeCard, type Rect } from '@/lib/tutorial/position';
 import { TUTORIAL_STEPS, type TutorialApi, type TutorialContext } from '@/lib/tutorial/steps';
 
@@ -173,6 +173,7 @@ function Tour({ onClose, ctx, api }: Props) {
               {step.title}
             </h2>
           </div>
+          <GripHorizontal size={16} className="mt-0.5 shrink-0 text-muted" aria-hidden />
           <button type="button" onClick={onClose} className="rounded-sm p-1 text-muted hover:text-ink" aria-label="Close tutorial" title="Close tutorial (Esc)">
             <X size={16} aria-hidden />
           </button>
