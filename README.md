@@ -94,6 +94,9 @@ The app is a single statically prerendered Next.js page; all computation runs in
   bandwidth limit, scope sampling (rate and phase) and an optional ADC clip, with true-vs-displayed
   peak, FWHM and rise time, plus small rise-time-budget and first-order power-uncertainty calculators.
   Equations and their checks: [docs/equation-verification.md](docs/equation-verification.md).
+- **Plot navigation**: drag to zoom; **double-click** a plot to return to its current view (the range chosen by Fit /
+  Full record / the preset). Plotly's built-in double-click is replaced because it restores the range from the first draw,
+  which is stale after a preset, Fit or unit change.
 - **Cursors**: draggable t₁/t₂ and f₁/f₂ with Δt, Δf, Δt·Δf; "FFT of cursor selection only".
 - **Learning tools**: context-sensitive explanations, warnings with one-click fixes, guided
   experiments, Fourier-synthesis mode (with a "randomize phases" twist), spectral-leakage laboratory
