@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Config, Data, Layout, PlotlyHTMLElement } from 'plotly.js-dist-min';
 import { useFontSize } from '@/components/layout/FontSizeProvider';
 import { scalePlotLayout } from '@/lib/ui/fontScale';
+import { resetAxesUpdate } from '@/lib/ui/plotView';
 
 type PlotlyModule = typeof import('plotly.js-dist-min');
 
@@ -33,6 +34,9 @@ const BASE_CONFIG: Partial<Config> = {
   displaylogo: false,
   responsive: false,
   scrollZoom: false,
+  // Plotly's built-in double-click restores the range from the FIRST draw (stale after presets, Fit or unit
+  // changes). We handle it ourselves below and return to the range the current layout asks for.
+  doubleClick: false,
   modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d', 'toggleSpikelines'],
 };
 
@@ -45,12 +49,17 @@ export default function Plot({ data, layout, config, className, height, ariaLabe
   const ref = useRef<HTMLDivElement>(null);
   const handlers = useRef({ onRelayout, onClick });
   const bound = useRef(false);
+  const resetRef = useRef<Record<string, unknown>>({});
   const [failed, setFailed] = useState(false);
   const { scale } = useFontSize();
   const scaledLayout = useMemo(() => scalePlotLayout(layout, scale), [layout, scale]);
+  // Snapshot of the intended axis ranges, taken while the layout is still pristine: Plotly keeps references to the
+  // nested axis objects of the layout it is given and rewrites their ranges in place whenever the user zooms.
+  const resetUpdate = useMemo(() => resetAxesUpdate(scaledLayout), [scaledLayout]);
 
   useEffect(() => {
     handlers.current = { onRelayout, onClick };
+    resetRef.current = resetUpdate;
   });
 
   useEffect(() => {
@@ -79,6 +88,23 @@ export default function Plot({ data, layout, config, className, height, ariaLabe
       alive = false;
     };
   }, [data, scaledLayout, config, height, filename]);
+
+  // A double-click on the plot area returns every axis to the range the current layout asks for. With Plotly's own
+  // reset switched off it emits no double-click event, so detect the second click ourselves (click count 2; this also
+  // works where a native dblclick event is not sent).
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onDoubleClick = (ev: MouseEvent) => {
+      if (ev.detail !== 2 || !(ev.target as Element | null)?.closest?.('.draglayer')) return; // second click, on the plot area (not legend or modebar)
+      loadPlotly().then((P) => {
+        // relayout accepts dotted attribute names ("xaxis.range"), which the typings do not model.
+        if ((el as unknown as { _fullLayout?: unknown })._fullLayout) void P.relayout(el as unknown as PlotlyHTMLElement, resetRef.current as Partial<Layout>);
+      });
+    };
+    el.addEventListener('click', onDoubleClick);
+    return () => el.removeEventListener('click', onDoubleClick);
+  }, []);
 
   useEffect(() => {
     const el = ref.current;
