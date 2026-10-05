@@ -99,6 +99,11 @@ The app is a single statically prerendered Next.js page; all computation runs in
   experiments, Fourier-synthesis mode (with a "randomize phases" twist), spectral-leakage laboratory
   with measured window metrics, KaTeX mathematics panel that follows the configuration, theory cards,
   parameter → effect table and a list of common conceptual mistakes.
+- **Presets and interface mode**: when a preset (or a link without a mode) uses controls the current mode hides — a chirp,
+  jitter, coherence, finite rise/fall time, quantization/aliasing demo, AM/noise … — the lab switches **up** to the lowest
+  mode that shows them, says why in the message bar and offers **Back to Basic**. It never switches down, and a link that
+  names a mode keeps it. The minimum is derived from the signal configuration in `lib/presets/minMode.ts`; a preset can add
+  its own requirement with `Preset.minMode`, and `tests/minmode.test.ts` pins the result for every preset.
 - **Tutorial**: the **Tutorial** button in the top bar opens a 25-step guided tour (Next / Previous / X, Esc to close). A card
   explains each area while the matching part of the screen is highlighted; some steps ask you to act (change the mode,
   load a preset, save A) and unlock **Next** when done, or you can press **Do it for me**. It covers the layout, mode

@@ -10,6 +10,7 @@ import { deepMerge, getPath, setPath } from '@/lib/state/path';
 import { experimentToQuery, queryToExperiment } from '@/lib/state/url';
 import { autoSampling, estimateSpectralExtent, resolveSampling } from '@/lib/dsp/sampling';
 import { explainChange, type Explanation } from '@/lib/education/explanations';
+import { modeLabel, planModeUpgrade } from '@/lib/presets/minMode';
 import type { LabApi, SectionKey, WorkspaceTab } from './context';
 
 interface Initial {
@@ -18,6 +19,7 @@ interface Initial {
   mode: UiMode;
   compare: Experiment | null;
   tab: WorkspaceTab;
+  explanation: Explanation | null;
 }
 
 function initialState(): Initial {
@@ -26,19 +28,22 @@ function initialState(): Initial {
       const r = queryToExperiment(window.location.search);
       if (r) {
         const p = getPreset(r.presetId);
+        // A link that names a mode keeps it; otherwise open in the lowest mode that shows everything the link uses.
+        const up = r.mode ? null : planModeUpgrade(r.experiment, 'basic', { extra: p?.minMode ? [p.minMode] : [], verb: 'Opened in', subject: p && r.presetId !== 'default' ? 'preset' : 'configuration' });
         return {
           exp: r.experiment,
           presetId: r.presetId,
-          mode: r.mode ?? 'basic',
+          mode: r.mode ?? up?.to ?? 'basic',
           compare: p ? buildCompareExperiment(p) : null,
           tab: p?.tab ?? 'measurements',
+          explanation: up ? { title: p && r.presetId !== 'default' ? p.name : 'Configuration', text: up.note } : null,
         };
       }
     } catch {
       /* ignore malformed URLs */
     }
   }
-  return { exp: buildPresetById('default'), presetId: 'default', mode: 'basic', compare: null, tab: 'measurements' };
+  return { exp: buildPresetById('default'), presetId: 'default', mode: 'basic', compare: null, tab: 'measurements', explanation: null };
 }
 
 /** Paths whose change should refresh the explanation banner. */
@@ -53,15 +58,19 @@ export function useLabState() {
   const [presetId, setPresetId] = useState(init.presetId);
   const [mode, setMode] = useState<UiMode>(init.mode);
   const [locks, setLocks] = useState<string[]>([]);
-  const [explanation, setExplanation] = useState<Explanation | null>(null);
+  const [explanation, setExplanation] = useState<Explanation | null>(init.explanation);
   const [undo, setUndo] = useState<{ exp: Experiment; label: string } | null>(null);
   const [compare, setCompare] = useState<Experiment | null>(init.compare);
   const [tab, setTab] = useState<WorkspaceTab>(init.tab);
   const expRef = useRef(exp);
+  const modeRef = useRef(mode);
 
   useEffect(() => {
     expRef.current = exp;
   }, [exp]);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
 
   // Keep a shareable URL in the address bar (debounced, no history entries).
   useEffect(() => {
@@ -145,6 +154,19 @@ export function useLabState() {
 
   const remember = useCallback((label: string) => setUndo({ exp: expRef.current, label }), []);
 
+  /**
+   * If a freshly loaded preset uses controls the current mode hides, switch up to the lowest mode that
+   * shows them (never down) and say so, with a way back. Returns the extra sentence for the message.
+   */
+  const upgradeModeFor = useCallback((next: Experiment, extra: Parameters<typeof planModeUpgrade>[2]) => {
+    const prev = modeRef.current;
+    const up = planModeUpgrade(next, prev, extra);
+    if (!up) return null;
+    modeRef.current = up.to;
+    setMode(up.to);
+    return { note: up.note, back: { label: `Back to ${modeLabel(prev)}`, run: () => { modeRef.current = prev; setMode(prev); } } };
+  }, []);
+
   const applyPreset = useCallback(
     (id: string) => {
       const p = getPreset(id);
@@ -157,9 +179,10 @@ export function useLabState() {
       const cmp = buildCompareExperiment(p);
       if (cmp) setCompare(applyLocks(cmp, next, []));
       if (p.tab) setTab(p.tab);
-      setExplanation({ title: p.name, text: p.description });
+      const up = upgradeModeFor(next, { extra: p.minMode ? [p.minMode] : [] });
+      setExplanation({ title: p.name, text: up ? `${p.description} ${up.note}` : p.description, action: up?.back });
     },
-    [locks, remember],
+    [locks, remember, upgradeModeFor],
   );
 
   const fitTime = useCallback(() => {
@@ -230,7 +253,9 @@ export function useLabState() {
     const next = buildPresetById(presetId);
     expRef.current = next;
     setExp(next);
-  }, [presetId, remember]);
+    const up = upgradeModeFor(next, { extra: getPreset(presetId)?.minMode ? [getPreset(presetId)!.minMode!] : [] });
+    if (up) setExplanation({ title: 'Reset to preset', text: up.note, action: up.back });
+  }, [presetId, remember, upgradeModeFor]);
 
   const doUndo = useCallback(() => {
     if (!undo) return;

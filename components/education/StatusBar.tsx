@@ -25,6 +25,18 @@ export default function StatusBar({ explanation, onDismiss, warnings, onFix }: P
             <strong className="mr-1 text-ink">{explanation.title}.</strong>
             {explanation.text}
           </p>
+          {explanation.action ? (
+            <button
+              type="button"
+              onClick={() => {
+                explanation.action?.run();
+                onDismiss();
+              }}
+              className="shrink-0 rounded-sm border border-line-strong px-1.5 py-0.5 text-[0.6875rem] text-ink-2 hover:text-ink"
+            >
+              {explanation.action.label}
+            </button>
+          ) : null}
           <button type="button" onClick={onDismiss} className="text-muted hover:text-ink" aria-label="Dismiss explanation">
             <X size={13} aria-hidden />
           </button>

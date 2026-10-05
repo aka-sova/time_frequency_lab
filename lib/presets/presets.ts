@@ -4,6 +4,7 @@
  * demonstration (checked by tests/presets.test.ts).
  */
 import type { DeepPartial, Experiment } from '@/types/signal';
+import type { ModeRequirement } from './minMode';
 
 export type PresetCategory = 'Fundamentals' | 'Pulse trains' | 'Sampling & DFT' | 'Time–frequency' | 'UWB & bandwidth' | 'Power & energy' | 'Instrument model' | 'Experiments';
 
@@ -21,6 +22,11 @@ export interface Preset {
   /** Workspace tab to reveal. */
   tab?: 'measurements' | 'power' | 'instrument' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
   intentional?: 'aliasing';
+  /**
+   * Extra interface-mode requirement the automatic derivation cannot see, e.g. a lesson about an
+   * analysis setting that is only exposed in Advanced mode (see lib/presets/minMode.ts).
+   */
+  minMode?: ModeRequirement;
 }
 
 const MANUAL = (fs: number, n: number) => ({ mode: 'manual' as const, sampleRateHz: fs, sampleCount: n });
@@ -307,6 +313,7 @@ export const PRESETS: Preset[] = [
     },
     fitFrequency: false,
     tab: 'leakage',
+    minMode: { mode: 'advanced', reason: 'the FFT window, zero-padding and raw-bin options' },
   },
   {
     id: 'gaussian-uncertainty',

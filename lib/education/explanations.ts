@@ -5,6 +5,8 @@
 export interface Explanation {
   title: string;
   text: string;
+  /** Optional button shown with the message (e.g. “Back to Basic” after an automatic mode switch). */
+  action?: { label: string; run: () => void };
 }
 
 type Dir = 'up' | 'down' | 'set';
