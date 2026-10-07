@@ -61,7 +61,8 @@ export function referenceSupport(ref: ReferenceInfo): [number, number] {
 export function autoAmbiguitySpan(c: CompressionResult): { delaySpanSec: number; dopplerSpanHz: number } {
   const T = c.reference.duration;
   if (c.reference.train && c.pri > 0) return { delaySpanSec: T, dopplerSpanHz: 2.5 / c.pri };
-  const b = Number.isFinite(c.metrics.widthSec) && c.metrics.widthSec > 0 ? 1 / c.metrics.widthSec : 0;
+  const w = c.metrics.widthSecZeroDoppler;
+  const b = Number.isFinite(w) && w > 0 ? 1 / w : 0;
   return { delaySpanSec: T, dopplerSpanHz: Math.max(b, 4 / T) };
 }
 
@@ -79,6 +80,13 @@ export function ambiguity(ref: ComplexSignal, o: AmbiguityOptions): AmbiguityRes
     for (let i = 0; i < env.length; i++) env[i] = Math.hypot(ref.re[i], ref.im[i]);
     [a, b] = activeRange(env, 1e-4);
   }
+  // Zero margin around the support: the band-limited resampling treats the segment as periodic, so its
+  // edges must lie off the pulse (otherwise Gibbs ringing there shows up at the extreme delays).
+  const za = a;
+  const zb = b;
+  const margin = Math.max(8, Math.round(0.05 * (b - a + 1)));
+  a = Math.max(0, a - margin);
+  b = Math.min(ref.re.length - 1, b + margin);
   const m0 = b - a + 1;
 
   // Downconvert and transform the cropped reference.
@@ -212,7 +220,7 @@ export function ambiguity(ref: ComplexSignal, o: AmbiguityOptions): AmbiguityRes
 
   // Exact zero-delay cut on the original samples.
   let e0 = 0;
-  for (let i = a; i <= b; i++) e0 += ref.re[i] * ref.re[i] + ref.im[i] * ref.im[i];
+  for (let i = za; i <= zb; i++) e0 += ref.re[i] * ref.re[i] + ref.im[i] * ref.im[i];
   for (let r = 0; r < dopplerPoints; r++) {
     const wv = (2 * Math.PI * nu[r]) / fs;
     const dc = Math.cos(wv);
@@ -221,7 +229,7 @@ export function ambiguity(ref: ComplexSignal, o: AmbiguityOptions): AmbiguityRes
     let ps = 0;
     let cr = 0;
     let ci = 0;
-    for (let i = a; i <= b; i++) {
+    for (let i = za; i <= zb; i++) {
       const p = ref.re[i] * ref.re[i] + ref.im[i] * ref.im[i];
       cr += p * pc;
       ci += p * ps;

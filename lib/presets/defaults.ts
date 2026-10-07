@@ -105,6 +105,14 @@ export const DEFAULT_ANALYSIS: AnalysisConfig = {
   tfView: 'stft',
   load: { resistanceOhm: 50 },
   instrument: { bandwidthHz: 1e9, sampleRateHz: 10e9, samplePhasePct: 0, triggerJitterRmsSec: 0, clipEnabled: false, clipRatio: 1.2 },
+  compression: {
+    reference: 'pulse',
+    weighting: 'rect',
+    dopplerHz: 0,
+    displayDb: true,
+    dbFloor: -60,
+    ambiguity: { autoSpan: true, delaySpanSec: 1e-6, dopplerSpanHz: 100e6, dbRange: 40 },
+  },
 };
 
 export const DEFAULT_EXPERIMENT: Experiment = { signal: DEFAULT_SIGNAL, analysis: DEFAULT_ANALYSIS };

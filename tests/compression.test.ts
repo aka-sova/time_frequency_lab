@@ -163,6 +163,20 @@ describe('matched filter: detection in noise', () => {
     expect(a.magNoisy).not.toBeNull();
   });
 
+  it('train reference: unbiased output SNR and a scatter that accounts for the repeats at m·PRI', () => {
+    const e = (seed: number, n: number) =>
+      mergeExperiment(
+        rfPulse({ signalType: 'pulse-train', pulse: { widthSec: 100e-9 }, repetition: { enabled: true, prfHz: 2e6, pulseCount: 8 }, sampling: manual(4e9, n) }),
+        { signal: { amplitude: 1, noise: { enabled: true, rms: 1 }, jitter: { seed } } },
+      );
+    const one = run(e(1, 32768), { reference: 'train' });
+    expect(one.snr!.outTheoryDb).toBeCloseTo(10 * Math.log10((8 * 200) / one.snr!.sigma ** 2), 1);
+    expect(one.snr!.scatterDb).toBeGreaterThan(0.8); // ≈ 1.2 dB: comb noise is correlated at m·PRI
+    let inv = 0;
+    for (let seed = 1; seed <= 8; seed++) inv += 10 ** (-run(e(seed, 131072), { reference: 'train' }).snr!.outMeasuredDb / 10);
+    expect(Math.abs(-10 * Math.log10(inv / 8) - one.snr!.outTheoryDb)).toBeLessThan(0.5);
+  });
+
   it('no noise → no SNR block', () => {
     expect(run(rfPulse()).snr).toBeNull();
   });

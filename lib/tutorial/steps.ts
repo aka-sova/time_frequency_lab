@@ -6,7 +6,7 @@
 import type { UiMode } from '@/types/signal';
 import type { Placement } from './position';
 
-export type TutorialTab = 'measurements' | 'power' | 'instrument' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
+export type TutorialTab = 'measurements' | 'power' | 'instrument' | 'compression' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
 
 /** What the tour can observe about the app. */
 export interface TutorialContext {

@@ -98,6 +98,15 @@ export const URL_KEYS: [string, string, Kind][] = [
   ['ijt', 'analysis.instrument.triggerJitterRmsSec', 'num'],
   ['ice', 'analysis.instrument.clipEnabled', 'bool'],
   ['icr', 'analysis.instrument.clipRatio', 'num'],
+  ['mfr', 'analysis.compression.reference', 'str'],
+  ['mfw', 'analysis.compression.weighting', 'str'],
+  ['mfd', 'analysis.compression.dopplerHz', 'num'],
+  ['mfl', 'analysis.compression.displayDb', 'bool'],
+  ['mff', 'analysis.compression.dbFloor', 'num'],
+  ['afa', 'analysis.compression.ambiguity.autoSpan', 'bool'],
+  ['aft', 'analysis.compression.ambiguity.delaySpanSec', 'num'],
+  ['aff', 'analysis.compression.ambiguity.dopplerSpanHz', 'num'],
+  ['afr', 'analysis.compression.ambiguity.dbRange', 'num'],
 ];
 
 function enc(v: unknown, kind: Kind): string {

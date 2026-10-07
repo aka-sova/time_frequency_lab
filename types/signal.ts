@@ -152,6 +152,8 @@ export type AnalysisWindow =
 export type WaveletType = 'morlet' | 'mexican-hat';
 export type TfView = 'stft' | 'cwt' | 'compare';
 export type PhaseUnit = 'deg' | 'rad';
+export type CompressionReference = 'pulse' | 'train';
+export type CompressionWeighting = 'rect' | 'hann' | 'hamming' | 'blackman' | 'blackman-harris';
 
 export interface AxisRange {
   mode: 'full' | 'manual';
@@ -235,6 +237,23 @@ export interface AnalysisConfig {
     clipEnabled: boolean;
     /** ADC full scale ÷ true peak amplitude. */
     clipRatio: number;
+  };
+  /** Matched filter and ambiguity function (Pulse compression tab). */
+  compression: {
+    reference: CompressionReference;
+    weighting: CompressionWeighting;
+    /** Narrowband Doppler mismatch ν of the received signal (Hz). */
+    dopplerHz: number;
+    displayDb: boolean;
+    dbFloor: number;
+    ambiguity: {
+      autoSpan: boolean;
+      /** Delay axis ±span (used when autoSpan is off). */
+      delaySpanSec: number;
+      /** Doppler axis ±span (used when autoSpan is off). */
+      dopplerSpanHz: number;
+      dbRange: number;
+    };
   };
 }
 

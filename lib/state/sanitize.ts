@@ -33,6 +33,8 @@ export const ENUMS = {
   phaseRef: ['center', 'start'],
   ampUnit: ['normalized', 'V', 'V/m'],
   codeFamily: ['barker', 'frank', 'p4'],
+  compRef: ['pulse', 'train'],
+  compWeighting: ['rect', 'hann', 'hamming', 'blackman', 'blackman-harris'],
 } as const;
 
 const RULES: Rule[] = [
@@ -104,6 +106,13 @@ const RULES: Rule[] = [
   { path: 'analysis.instrument.samplePhasePct', min: 0, max: 100 },
   { path: 'analysis.instrument.triggerJitterRmsSec', min: 0, max: 1e-6 },
   { path: 'analysis.instrument.clipRatio', min: 0.05, max: 10 },
+  { path: 'analysis.compression.reference', values: ENUMS.compRef },
+  { path: 'analysis.compression.weighting', values: ENUMS.compWeighting },
+  { path: 'analysis.compression.dopplerHz', min: -1e12, max: 1e12 },
+  { path: 'analysis.compression.dbFloor', min: -200, max: -10 },
+  { path: 'analysis.compression.ambiguity.delaySpanSec', min: 1e-15, max: 1e12 },
+  { path: 'analysis.compression.ambiguity.dopplerSpanHz', min: 1e-3, max: 1e12 },
+  { path: 'analysis.compression.ambiguity.dbRange', min: 10, max: 120 },
 ];
 
 /** Recursively copies only keys present in the template, with matching primitive types. */

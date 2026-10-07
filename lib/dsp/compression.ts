@@ -16,7 +16,7 @@
  * receiver knows everything deterministic (taper, Δφ increment, code, chirp)
  * and nothing random (jitter, phase noise, random phase, noise).
  */
-import type { SignalConfig } from '@/types/signal';
+import type { CompressionReference, CompressionWeighting, SignalConfig } from '@/types/signal';
 import type { SpectrumKind } from './bandwidth';
 import { fftInPlace, nextPowerOfTwo } from './fft';
 import { activeRange } from './instrument';
@@ -27,11 +27,12 @@ import { snapCodeLength } from './codes';
 import { windowValue } from './windows';
 
 export const SPEED_OF_LIGHT = 299792458;
+/** Sidelobes below this level (dB) are numerical residue (FFT Hilbert/Gibbs) and reported as none. */
+export const SIDELOBE_FLOOR_DB = -80;
 /** |ν|·B·T/f_c above which the narrowband (frequency-shift) Doppler model is flagged. */
 export const NARROWBAND_LIMIT = 0.3;
 
-export type CompressionReference = 'pulse' | 'train';
-export type CompressionWeighting = 'rect' | 'hann' | 'hamming' | 'blackman' | 'blackman-harris';
+export type { CompressionReference, CompressionWeighting };
 
 export const COMPRESSION_WEIGHTINGS: { id: CompressionWeighting; label: string }[] = [
   { id: 'rect', label: 'None (matched)' },
@@ -83,6 +84,10 @@ export interface CompressionMetrics {
   delayShift: number;
   /** −3 dB mainlobe width τ_c. */
   widthSec: number;
+  /** −3 dB crossings [τ₁, τ₂] of the mainlobe. */
+  halfPower: [number, number];
+  /** τ_c of the zero-Doppler output (independent of ν). */
+  widthSecZeroDoppler: number;
   /** FWHM of the single-pulse envelope. */
   pulseFwhm: number;
   /** pulseFwhm / τ_c. */
@@ -344,9 +349,10 @@ function codeOrChirpTb(cfg: SignalConfig): number | null {
   return null;
 }
 
-export function analyzeCompression(signal: SignalResult, cfg: SignalConfig, s: CompressionSettings): CompressionResult {
+/** `prebuilt`: a reference from buildReference() with the same reference/weighting settings (saves rebuilding it when only ν changes). */
+export function analyzeCompression(signal: SignalResult, cfg: SignalConfig, s: CompressionSettings, prebuilt?: ReferenceInfo): CompressionResult {
   const { fs, n } = signal;
-  const ref = buildReference(signal, cfg, s);
+  const ref = prebuilt ?? buildReference(signal, cfg, s);
   const H = prepare(ref.signal);
   const eRef = energy(ref.unweighted);
   const eH = energy(ref.signal);
@@ -385,7 +391,17 @@ export function analyzeCompression(signal: SignalResult, cfg: SignalConfig, s: C
   let iR = p;
   while (iR < w1 && mag[iR + 1] < mag[iR]) iR++;
   const thr = peak / Math.SQRT2;
-  const widthSec = crossing(tau, mag, p, 1, thr, iR) - crossing(tau, mag, p, -1, thr, iL);
+  const halfPower: [number, number] = [crossing(tau, mag, p, -1, thr, iL), crossing(tau, mag, p, 1, thr, iR)];
+  const widthSec = halfPower[1] - halfPower[0];
+  let widthSecZeroDoppler = widthSec;
+  if (nu !== 0) {
+    let a0 = p0;
+    while (a0 > w0 && mag0[a0 - 1] < mag0[a0]) a0--;
+    let b0 = p0;
+    while (b0 < w1 && mag0[b0 + 1] < mag0[b0]) b0++;
+    const t0 = mag0[p0] / Math.SQRT2;
+    widthSecZeroDoppler = crossing(tau, mag0, p0, 1, t0, b0) - crossing(tau, mag0, p0, -1, t0, a0);
+  }
 
   let side = 0;
   let eIn = 0;
@@ -398,8 +414,9 @@ export function analyzeCompression(signal: SignalResult, cfg: SignalConfig, s: C
       side = Math.max(side, mag[i]);
     }
   }
-  const pslrDb = side > 1e-6 * peak ? 20 * Math.log10(side / peak) : -Infinity;
-  const islrDb = eOut > 0 ? 10 * Math.log10(eOut / eIn) : -Infinity;
+  const floor = 10 ** (SIDELOBE_FLOOR_DB / 20);
+  const pslrDb = side > floor * peak ? 20 * Math.log10(side / peak) : -Infinity;
+  const islrDb = eOut > floor * floor * eIn ? 10 * Math.log10(eOut / eIn) : -Infinity;
 
   const ambiguities: CompressionMetrics['ambiguities'] = [];
   if (recordTrain) {
@@ -455,8 +472,15 @@ export function analyzeCompression(signal: SignalResult, cfg: SignalConfig, s: C
       // Referred to the real output (peak² / mean noise power — the convention of 2E/N₀): the complex (I+Q) output
       // of a bandpass record carries twice the noise power relative to its peak², an exact factor of 2.
       const outMeasuredDb = 10 * Math.log10(yPeak2 / v) + (ref.signal.kind === 'bandpass' ? 10 * Math.log10(2) : 0);
-      // Output noise stays correlated over ≈ τ_c: that many lags make one independent sample.
-      const dof = Math.max(1, (k1 - k0 + 1) / fs / widthSec);
+      // Output noise is correlated over T_corr = Σ|R_h|²/R_h(0)² (R_h: autocorrelation of h, via Σ|H|⁴/L);
+      // for a train reference this includes the repeats at m·PRI. Real (baseband) noise has half the dof.
+      let h4 = 0;
+      for (let k = 0; k < H.len; k++) {
+        const p2 = H.re[k] * H.re[k] + H.im[k] * H.im[k];
+        h4 += p2 * p2;
+      }
+      const tCorr = h4 / H.len / (eH * eH) / fs;
+      const dof = Math.max(1, ((k1 - k0 + 1) / fs / tCorr) * (ref.signal.kind === 'bandpass' ? 1 : 0.5));
       snr = {
         sigma: Math.sqrt(sigma2),
         scatterDb: 4.34 / Math.sqrt(dof),
@@ -494,6 +518,8 @@ export function analyzeCompression(signal: SignalResult, cfg: SignalConfig, s: C
       peakDelay: tau[p],
       delayShift: tau[p] - tau[p0],
       widthSec,
+      halfPower,
+      widthSecZeroDoppler,
       pulseFwhm,
       ratio: pulseFwhm / widthSec,
       tb: codeOrChirpTb(cfg),

@@ -20,7 +20,7 @@ export interface Preset {
   /** Configuration loaded as the A side of an A/B comparison. */
   compareWith?: DeepPartial<Experiment>;
   /** Workspace tab to reveal. */
-  tab?: 'measurements' | 'power' | 'instrument' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
+  tab?: 'measurements' | 'power' | 'instrument' | 'compression' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
   intentional?: 'aliasing';
   /**
    * Extra interface-mode requirement the automatic derivation cannot see, e.g. a lesson about an

@@ -39,6 +39,8 @@ export const TOOLTIPS: Record<string, string> = {
   amFreq: 'Modulating frequency f_m.',
   noise: 'Additive white Gaussian noise. Raises a flat floor in the PSD; use the Welch estimator to average it.',
   noiseRms: 'RMS value of the additive noise.',
+  compressionWeighting: 'Amplitude taper applied to the reference (mismatched filter). Lowers the range sidelobes at the cost of a wider mainlobe and an SNR loss of 10·log₁₀(ENBW).',
+  compressionDoppler: 'Doppler shift ν of the received signal relative to the reference (narrowband model: a frequency shift). An LFM peak moves by −ν/k; a phase code loses its peak.',
   samplingMode: 'Auto chooses fₛ and N from the waveform model so the significant spectrum lies within Nyquist. Manual lets you undersample on purpose.',
   fs: 'Sampling frequency fₛ. Sets the Nyquist frequency f_N = fₛ/2. It does not change the physical spectrum.',
   sampleCount: 'Number of samples N in the record. Together with fₛ it sets the observation T_obs = N/fₛ.',
