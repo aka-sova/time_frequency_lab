@@ -285,10 +285,12 @@ All open the compression tab, use auto sampling, respect Nyquist (existing test)
 | `barker-13` | Barker-13, carrier on, τ = 1.3 µs (whole samples per chip) | PSLR ≈ −22.3 dB |
 | `p4-64` | P4, L = 64, carrier on, τ = 1.024 µs (whole samples per chip) | PSLR ≈ −24.4 dB (below Barker-13); LFM-like ridge (peak shift sign matches an up-chirp) |
 | `coherent-train-ambiguity` | 8-pulse coherent train, reference = train | integration gain ≈ 9.03 dB; peaks at m·PRI |
-| `same-energy-detection` | `compareWith`: 1 µs unmodulated RF pulse (A) vs the same pulse with LFM B = 100 MHz (B); same amplitude and duration ⇒ same energy; noise on | SNR_out (theory) equal; τ_c 0.586 µs vs ≈ 8.9 ns (≈ 66×) |
+| `same-energy-detection` | `compareWith`: 1 µs unmodulated RF pulse (A) vs the same pulse with LFM B = 100 MHz (B); same amplitude and duration ⇒ same energy; σ = 1, noise off | SNR_out (theory) equal; τ_c 0.586 µs vs ≈ 8.9 ns (≈ 66×) |
 
-Mode switching uses the existing `minMode` derivation, no special cases: code/chirp presets → Advanced;
-`same-energy-detection` (noise on) → Expert. Accepted: the switch never goes down and offers "Back to …".
+Mode switching uses the existing `minMode` derivation, no special cases: code/chirp presets → Advanced. The project
+invariant "no preset forces Expert mode" (tests/minmode.test.ts) is kept: `same-energy-detection` sets σ = 1 with the
+noise off; the Detection card always shows the reference energy and the theoretical output SNR at the current σ, and
+its own noise toggle (any mode) adds the single-realization measurement.
 
 ## 6. Tests
 

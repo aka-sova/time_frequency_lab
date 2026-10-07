@@ -119,6 +119,12 @@ describe('every preset (pinned, so a change here is a conscious decision)', () =
     'stft-resolution': 'advanced',
     'exp-rise-time': 'advanced',
     'exp-undersample': 'advanced',
+    'lfm-tb100': 'advanced',
+    'lfm-hamming': 'advanced',
+    'lfm-doppler-coupling': 'advanced',
+    'barker-13': 'advanced',
+    'p4-64': 'advanced',
+    'same-energy-detection': 'advanced',
   };
 
   it.each(PRESETS.map((p) => [p.id, p] as const))('%s', (id, p) => {

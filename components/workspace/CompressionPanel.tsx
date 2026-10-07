@@ -315,18 +315,23 @@ export default function CompressionPanel({ signal }: { signal: SignalResult }) {
       <Card title="Detection in noise">
         <ToggleField label="Additive noise" path="signal.noise.enabled" tip="noise" />
         <NumberField label="Noise σ (RMS)" path="signal.noise.rms" min={0} max={Math.max(10 * s.amplitude, 1e-12)} step={Math.max(s.amplitude / 100, 1e-12)} disabled={!s.noise.enabled} />
-        {res.snr ? (
-          <table className="mt-2 w-full">
-            <tbody>
-              <Row k="Input peak SNR  max x²/σ²" v={dB(res.snr.inDb)} />
-              <Row k="Output SNR, theory  Σx²/σ² = 2E/N₀ − losses" v={dB(res.snr.outTheoryDb)} />
-              <Row k="Output SNR, this realization" v={dB(res.snr.outMeasuredDb)} sub={`±${formatNumber(res.snr.scatterDb, 2)} dB`} />
-              <Row k="Processing gain" v={dB(res.snr.gainDb)} />
-            </tbody>
-          </table>
-        ) : (
-          <p className="mt-2 text-muted">Turn the noise on to compare the measured output SNR with 2E/N₀.</p>
-        )}
+        <table className="mt-2 w-full">
+          <tbody>
+            <Row k="Reference energy E = Σx²·Δt" v={formatEngineering(m.referenceSumSq / signal.fs, 'V²s', 4)} />
+            <Row
+              k={`Output SNR, theory  Σx²/σ² = 2E/N₀ − losses${res.snr ? '' : ` (σ = ${formatNumber(s.noise.rms, 3)})`}`}
+              v={res.snr ? dB(res.snr.outTheoryDb) : s.noise.rms > 0 ? dB(10 * Math.log10(m.referenceSumSq / s.noise.rms ** 2) - m.weightingLossDb - m.dopplerLossDb) : '—'}
+            />
+            {res.snr ? (
+              <>
+                <Row k="Input peak SNR  max x²/σ²" v={dB(res.snr.inDb)} />
+                <Row k="Output SNR, this realization" v={dB(res.snr.outMeasuredDb)} sub={`±${formatNumber(res.snr.scatterDb, 2)} dB`} />
+                <Row k="Processing gain" v={dB(res.snr.gainDb)} />
+              </>
+            ) : null}
+          </tbody>
+        </table>
+        {!res.snr ? <p className="mt-2 text-muted">Turn the noise on to measure the output SNR of one noise realization.</p> : null}
         <p className="mt-2 text-muted">
           The matched filter maximizes the output SNR to 2E/N₀: it depends only on the pulse energy, not on its shape or bandwidth. A chirp and an unmodulated pulse of equal energy are equally detectable; only the chirp resolves
           targets that are closer than the pulse length. ± is the expected scatter of a single noise realization.

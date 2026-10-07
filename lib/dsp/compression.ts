@@ -103,6 +103,8 @@ export interface CompressionMetrics {
   ambiguities: { m: number; delay: number; db: number }[];
   integrationGainDb: number | null;
   integrationLossDb: number | null;
+  /** Σx² of the real, unweighted reference (2E/N₀ = Σx²/σ² for white noise of variance σ²). */
+  referenceSumSq: number;
 }
 
 export interface SnrResult {
@@ -531,6 +533,7 @@ export function analyzeCompression(signal: SignalResult, cfg: SignalConfig, s: C
       ambiguities,
       integrationGainDb,
       integrationLossDb,
+      referenceSumSq: realEnergy(ref.real),
     },
     snr,
     reference: ref,

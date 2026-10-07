@@ -13,6 +13,7 @@ import { collectWarnings } from '@/lib/dsp/warnings';
 import { ETA0, energyStats, periodicStats, powerContext } from '@/lib/dsp/power';
 import { simulateInstrument } from '@/lib/dsp/instrument';
 import { generateSignal } from '@/lib/dsp/signals';
+import { analyzeCompression } from '@/lib/dsp/compression';
 
 describe('presets', () => {
   it('has at least 20 presets with unique ids', () => {
@@ -180,5 +181,64 @@ describe('power & instrument presets', () => {
   it('new presets open the matching tab', () => {
     for (const id of ['uwb-gaussian-50ohm', 'uwb-monocycle-power', 'field-10vm-air', 'prf-overlap-power']) expect(PRESETS.find((p) => p.id === id)!.tab).toBe('power');
     for (const id of ['scope-bandwidth-limit', 'scope-trigger-jitter', 'scope-undersampling', 'scope-adc-clipping']) expect(PRESETS.find((p) => p.id === id)!.tab).toBe('instrument');
+  });
+});
+
+describe('radar & pulse-compression presets', () => {
+  const compress = (id: string, compare = false) => {
+    const p = PRESETS.find((x) => x.id === id)!;
+    const e = compare ? buildCompareExperiment(p)! : buildPresetExperiment(p);
+    const c = e.analysis.compression;
+    return analyzeCompression(generateSignal(e.signal), e.signal, { reference: c.reference, weighting: c.weighting, dopplerHz: c.dopplerHz });
+  };
+  const near = (v: number, want: number, rel: number) => expect(Math.abs(v / want - 1)).toBeLessThan(rel);
+
+  it('all open the Pulse compression tab', () => {
+    for (const p of PRESETS.filter((x) => x.category === 'Radar & pulse compression')) expect(p.tab).toBe('compression');
+  });
+  it('mf-rect-pulse: triangle, τ_c = (2 − √2)·τ', () => {
+    const r = compress('mf-rect-pulse');
+    near(r.metrics.widthSec, (2 - Math.SQRT2) * 1e-6, 0.01);
+    near(r.metrics.ratio, 1 / (2 - Math.SQRT2), 0.02);
+  });
+  it('lfm-tb100: τ_c ≈ 0.886/B, PSLR ≈ −13.3 dB, ratio ≈ 113', () => {
+    const r = compress('lfm-tb100');
+    near(r.metrics.widthSec, 0.886 / 100e6, 0.02);
+    expect(Math.abs(r.metrics.pslrDb + 13.26)).toBeLessThan(0.3);
+    near(r.metrics.ratio, 113, 0.03);
+  });
+  it('lfm-hamming: low sidelobes, 1.34 dB loss, wider mainlobe', () => {
+    const plain = compress('lfm-tb100');
+    const r = compress('lfm-hamming');
+    expect(r.metrics.pslrDb).toBeLessThan(-38);
+    expect(Math.abs(r.metrics.weightingLossDb - 1.34)).toBeLessThan(0.05);
+    near(r.metrics.widthSec / plain.metrics.widthSec, 1.47, 0.05);
+  });
+  it('lfm-doppler-coupling: −250 ns shift, 0.92 dB loss, inside the narrowband limit', () => {
+    const r = compress('lfm-doppler-coupling');
+    near(r.metrics.delayShift, -250e-9, 0.02);
+    expect(Math.abs(r.metrics.dopplerLossDb - 0.915)).toBeLessThan(0.1);
+    expect(r.narrowband.exceeded).toBe(false);
+  });
+  it('barker-13: PSLR = 1/13', () => {
+    expect(Math.abs(compress('barker-13').metrics.pslrDb + 22.28)).toBeLessThan(0.1);
+  });
+  it('p4-64: PSLR ≈ −24.4 dB', () => {
+    expect(Math.abs(compress('p4-64').metrics.pslrDb + 24.36)).toBeLessThan(0.4);
+  });
+  it('coherent-train-ambiguity: 9.03 dB integration gain, −1.16 dB ambiguities at ±PRI', () => {
+    const r = compress('coherent-train-ambiguity');
+    expect(Math.abs(r.metrics.integrationGainDb! - 9.031)).toBeLessThan(0.05);
+    for (const m of [-1, 1]) {
+      const a = r.metrics.ambiguities.find((x) => x.m === m)!;
+      expect(Math.abs(a.db - 20 * Math.log10(7 / 8))).toBeLessThan(0.05);
+    }
+  });
+  it('same-energy-detection: equal energy (equal 2E/N₀), very different resolution', () => {
+    const b = compress('same-energy-detection');
+    const a = compress('same-energy-detection', true);
+    expect(Math.abs(10 * Math.log10(a.metrics.referenceSumSq / b.metrics.referenceSumSq))).toBeLessThan(0.01);
+    expect(10 * Math.log10(b.metrics.referenceSumSq)).toBeCloseTo(33.01, 1); // σ = 1
+    expect(a.metrics.widthSec / b.metrics.widthSec).toBeGreaterThan(60);
   });
 });
