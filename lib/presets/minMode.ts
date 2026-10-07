@@ -34,6 +34,7 @@ const carrierOn = (e: Experiment) => e.signal.carrier.enabled || e.signal.chirp.
 
 const FEATURES: Feature[] = [
   { mode: 'advanced', reason: 'the chirp parameters', active: (e) => e.signal.chirp.enabled },
+  { mode: 'advanced', reason: 'the phase-code parameters', active: (e) => e.signal.code.enabled && e.signal.pulse.enabled },
   {
     mode: 'advanced',
     reason: 'the jitter controls',

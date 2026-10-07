@@ -37,6 +37,7 @@
   --color-sec-coherence: #df6e98;
   --color-sec-jitter: #e66767;
   --color-sec-chirp: #9d93ef;
+  --color-sec-code: #c879d9;
   --color-sec-modulation: #5aae4a;
   --color-sec-sampling: #33b5c4;
 }
@@ -72,6 +73,7 @@
   --color-sec-coherence: #c9407a;
   --color-sec-jitter: #d03b3b;
   --color-sec-chirp: #4a3aa7;
+  --color-sec-code: #8d3aa6;
   --color-sec-modulation: #2e7d32;
   --color-sec-sampling: #0f8a99;
 }

@@ -7,6 +7,7 @@
  * beyond the Nyquist frequency fs/2.
  */
 import type { SignalConfig } from '@/types/signal';
+import { snapCodeLength } from './codes';
 
 export const MIN_SAMPLES = 64;
 export const MAX_SAMPLES = 1 << 17; // 131072
@@ -32,6 +33,11 @@ export interface SpectralExtent {
   fMaxHz: number;
   /** True when the ideal waveform has slowly decaying tails (discontinuities). */
   unbounded: boolean;
+}
+
+/** Chip duration T_c = τ/L of the phase code. */
+export function codeChipSec(cfg: SignalConfig): number {
+  return Math.max(cfg.pulse.widthSec, 1e-15) / snapCodeLength(cfg.code.family, cfg.code.length);
 }
 
 /** Characteristic duration used for observation sizing. */
@@ -95,6 +101,11 @@ export function estimateSpectralExtent(cfg: SignalConfig): SpectralExtent {
         break;
       }
     }
+  }
+  if (cfg.code.enabled && cfg.pulse.enabled) {
+    // Rectangular chips: phase steps behave like rect edges at the chip scale.
+    env = Math.max(env, 10 / codeChipSec(cfg));
+    unbounded = true;
   }
   const am = cfg.am.enabled ? cfg.am.frequencyHz : 0;
   return { carrierMaxHz: carrierMax, envelopeExtentHz: env, fMaxHz: carrierMax + env + am, unbounded };

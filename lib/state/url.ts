@@ -48,6 +48,9 @@ export const URL_KEYS: [string, string, Kind][] = [
   ['che', 'signal.chirp.enabled', 'bool'],
   ['cf1', 'signal.chirp.startFrequencyHz', 'num'],
   ['cf2', 'signal.chirp.endFrequencyHz', 'num'],
+  ['pce', 'signal.code.enabled', 'bool'],
+  ['pcf', 'signal.code.family', 'str'],
+  ['pcl', 'signal.code.length', 'num'],
   ['ame', 'signal.am.enabled', 'bool'],
   ['amd', 'signal.am.depth', 'num'],
   ['amf', 'signal.am.frequencyHz', 'num'],
@@ -95,6 +98,15 @@ export const URL_KEYS: [string, string, Kind][] = [
   ['ijt', 'analysis.instrument.triggerJitterRmsSec', 'num'],
   ['ice', 'analysis.instrument.clipEnabled', 'bool'],
   ['icr', 'analysis.instrument.clipRatio', 'num'],
+  ['mfr', 'analysis.compression.reference', 'str'],
+  ['mfw', 'analysis.compression.weighting', 'str'],
+  ['mfd', 'analysis.compression.dopplerHz', 'num'],
+  ['mfl', 'analysis.compression.displayDb', 'bool'],
+  ['mff', 'analysis.compression.dbFloor', 'num'],
+  ['afa', 'analysis.compression.ambiguity.autoSpan', 'bool'],
+  ['aft', 'analysis.compression.ambiguity.delaySpanSec', 'num'],
+  ['aff', 'analysis.compression.ambiguity.dopplerSpanHz', 'num'],
+  ['afr', 'analysis.compression.ambiguity.dbRange', 'num'],
 ];
 
 function enc(v: unknown, kind: Kind): string {

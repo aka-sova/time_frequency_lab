@@ -43,6 +43,7 @@ export const DEFAULT_SIGNAL: SignalConfig = {
     seed: 1,
   },
   chirp: { enabled: false, startFrequencyHz: 0.8e9, endFrequencyHz: 1.2e9 },
+  code: { enabled: false, family: 'barker', length: 13 },
   am: { enabled: false, depth: 0.5, frequencyHz: 50e6 },
   noise: { enabled: false, rms: 0.05 },
   sampling: {
@@ -104,6 +105,14 @@ export const DEFAULT_ANALYSIS: AnalysisConfig = {
   tfView: 'stft',
   load: { resistanceOhm: 50 },
   instrument: { bandwidthHz: 1e9, sampleRateHz: 10e9, samplePhasePct: 0, triggerJitterRmsSec: 0, clipEnabled: false, clipRatio: 1.2 },
+  compression: {
+    reference: 'pulse',
+    weighting: 'rect',
+    dopplerHz: 0,
+    displayDb: true,
+    dbFloor: -60,
+    ambiguity: { autoSpan: true, delaySpanSec: 1e-6, dopplerSpanHz: 100e6, dbRange: 40 },
+  },
 };
 
 export const DEFAULT_EXPERIMENT: Experiment = { signal: DEFAULT_SIGNAL, analysis: DEFAULT_ANALYSIS };
@@ -124,17 +133,18 @@ export const SIGNAL_TYPES: { id: SignalType; label: string; description: string 
   { id: 'burst', label: 'Windowed carrier burst', description: 'a(t)·cos(2πf₀t + φ).' },
   { id: 'pulse-train', label: 'Pulse train', description: 'Σ p(t − nT_r), T_r = 1/PRF.' },
   { id: 'chirp', label: 'Chirped pulse (LFM)', description: 'a(t)·cos[2π(f₀t + ½kt²) + φ].' },
+  { id: 'phase-code', label: 'Phase-coded pulse', description: 'a(t)·cos[2πf₀t + φ_code(t)] — Barker, Frank or P4 chips.' },
   { id: 'composite', label: 'Composite (custom)', description: 'Combine carrier, envelope, AM, chirp, train and jitter freely.' },
 ];
 
 export function signalTypeTemplate(type: SignalType, cur: SignalConfig): DeepPartial<SignalConfig> {
   switch (type) {
     case 'sinusoid':
-      return { signalType: type, carrier: { enabled: true }, pulse: { enabled: false }, repetition: { enabled: false }, chirp: { enabled: false }, am: { enabled: false } };
+      return { signalType: type, carrier: { enabled: true }, pulse: { enabled: false }, repetition: { enabled: false }, chirp: { enabled: false }, code: { enabled: false }, am: { enabled: false } };
     case 'rect':
-      return { signalType: type, carrier: { enabled: false }, pulse: { enabled: true, envelope: 'rect' }, repetition: { enabled: false }, chirp: { enabled: false } };
+      return { signalType: type, carrier: { enabled: false }, pulse: { enabled: true, envelope: 'rect' }, repetition: { enabled: false }, chirp: { enabled: false }, code: { enabled: false } };
     case 'gaussian':
-      return { signalType: type, carrier: { enabled: false }, pulse: { enabled: true, envelope: 'gaussian' }, repetition: { enabled: false }, chirp: { enabled: false } };
+      return { signalType: type, carrier: { enabled: false }, pulse: { enabled: true, envelope: 'gaussian' }, repetition: { enabled: false }, chirp: { enabled: false }, code: { enabled: false } };
     case 'gaussian-derivative':
       return {
         signalType: type,
@@ -142,6 +152,7 @@ export function signalTypeTemplate(type: SignalType, cur: SignalConfig): DeepPar
         pulse: { enabled: true, envelope: cur.pulse.envelope === 'gaussian-d2' ? 'gaussian-d2' : 'gaussian-d1' },
         repetition: { enabled: false },
         chirp: { enabled: false },
+        code: { enabled: false },
       };
     case 'burst':
       return {
@@ -150,11 +161,21 @@ export function signalTypeTemplate(type: SignalType, cur: SignalConfig): DeepPar
         pulse: { enabled: true, envelope: cur.pulse.envelope.startsWith('gaussian-') ? 'rect' : cur.pulse.envelope },
         repetition: { enabled: false },
         chirp: { enabled: false },
+        code: { enabled: false },
       };
     case 'pulse-train':
       return { signalType: type, pulse: { enabled: true }, repetition: { enabled: true } };
     case 'chirp':
-      return { signalType: type, carrier: { enabled: true }, pulse: { enabled: true }, chirp: { enabled: true }, repetition: { enabled: false } };
+      return { signalType: type, carrier: { enabled: true }, pulse: { enabled: true }, chirp: { enabled: true }, code: { enabled: false }, repetition: { enabled: false } };
+    case 'phase-code':
+      return {
+        signalType: type,
+        carrier: { enabled: true },
+        pulse: { enabled: true, envelope: 'rect' },
+        chirp: { enabled: false },
+        code: { enabled: true },
+        repetition: { enabled: false },
+      };
     case 'composite':
       return { signalType: type };
   }

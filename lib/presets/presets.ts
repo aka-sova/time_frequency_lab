@@ -6,7 +6,7 @@
 import type { DeepPartial, Experiment } from '@/types/signal';
 import type { ModeRequirement } from './minMode';
 
-export type PresetCategory = 'Fundamentals' | 'Pulse trains' | 'Sampling & DFT' | 'Time–frequency' | 'UWB & bandwidth' | 'Power & energy' | 'Instrument model' | 'Experiments';
+export type PresetCategory = 'Fundamentals' | 'Pulse trains' | 'Sampling & DFT' | 'Time–frequency' | 'UWB & bandwidth' | 'Power & energy' | 'Instrument model' | 'Radar & pulse compression' | 'Experiments';
 
 export interface Preset {
   id: string;
@@ -20,7 +20,7 @@ export interface Preset {
   /** Configuration loaded as the A side of an A/B comparison. */
   compareWith?: DeepPartial<Experiment>;
   /** Workspace tab to reveal. */
-  tab?: 'measurements' | 'power' | 'instrument' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
+  tab?: 'measurements' | 'power' | 'instrument' | 'compression' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
   intentional?: 'aliasing';
   /**
    * Extra interface-mode requirement the automatic derivation cannot see, e.g. a lesson about an
@@ -44,6 +44,20 @@ const GAUSS_V = {
 };
 const INSTRUMENT_SIGNAL = { ...GAUSS_V, amplitude: 1 };
 const SPEC_2GHZ = { spectrum: { range: { mode: 'manual' as const, min: 0, max: 2e9 } } };
+
+/** 1 µs rectangular RF pulse at 1 GHz, 4 GS/s × 16384 (4.1 µs record): the radar presets' base. */
+const RADAR_RF = {
+  signalType: 'burst' as const,
+  amplitude: 1,
+  carrier: { enabled: true, frequencyHz: 1e9 },
+  pulse: { enabled: true, envelope: 'rect' as const, widthSec: 1e-6, edgesEnabled: false },
+  repetition: { enabled: false },
+  chirp: { enabled: false },
+  code: { enabled: false },
+  sampling: MANUAL(4e9, 16384),
+};
+/** 1 µs LFM sweeping 0.95 → 1.05 GHz: B = 100 MHz, TB = 100. */
+const LFM_100 = { ...RADAR_RF, signalType: 'chirp' as const, chirp: { enabled: true, startFrequencyHz: 0.95e9, endFrequencyHz: 1.05e9 } };
 
 export const PRESETS: Preset[] = [
   {
@@ -283,6 +297,87 @@ export const PRESETS: Preset[] = [
     },
   },
   {
+    id: 'mf-rect-pulse',
+    name: 'Matched filter: unmodulated pulse',
+    category: 'Radar & pulse compression',
+    description: '1 µs RF pulse at 1 GHz. The matched-filter output is a triangle 2 µs wide (τ_c ≈ 0.59 µs): no compression — the range resolution is set by the pulse length.',
+    experiment: { signal: RADAR_RF },
+    tab: 'compression',
+  },
+  {
+    id: 'lfm-tb100',
+    name: 'LFM pulse compression (TB = 100)',
+    category: 'Radar & pulse compression',
+    description: 'The same 1 µs pulse swept 0.95 → 1.05 GHz. The matched filter compresses it to τ_c ≈ 0.886/B ≈ 8.9 ns (≈ 113×) with −13.3 dB range sidelobes.',
+    experiment: { signal: LFM_100 },
+    tab: 'compression',
+  },
+  {
+    id: 'lfm-hamming',
+    name: 'LFM with Hamming weighting',
+    category: 'Radar & pulse compression',
+    description: 'Same LFM, Hamming-tapered reference (mismatched filter): sidelobes near −40 dB, mainlobe ≈ 1.5× wider, 1.34 dB SNR loss — the window’s ENBW.',
+    experiment: { signal: LFM_100, analysis: { compression: { weighting: 'hamming' } } },
+    tab: 'compression',
+  },
+  {
+    id: 'lfm-doppler-coupling',
+    name: 'LFM range–Doppler coupling',
+    category: 'Radar & pulse compression',
+    description: '2.5 µs LFM, B = 20 MHz, received with a 2 MHz Doppler shift: the peak moves by −ν/k = −250 ns and loses only 0.9 dB. Click the ambiguity heatmap to try other shifts.',
+    experiment: {
+      signal: { ...LFM_100, pulse: { ...RADAR_RF.pulse, widthSec: 2.5e-6 }, chirp: { enabled: true, startFrequencyHz: 0.99e9, endFrequencyHz: 1.01e9 }, sampling: MANUAL(4e9, 32768) },
+      analysis: { compression: { dopplerHz: 2e6 } },
+    },
+    tab: 'compression',
+  },
+  {
+    id: 'barker-13',
+    name: 'Barker-13 phase code',
+    category: 'Radar & pulse compression',
+    description: 'Barker-13 (+++++−−++−+−+), 100 ns chips at 1 GHz: compresses 13× with every range sidelobe at 1/13 (−22.3 dB). Add Doppler: the peak collapses instead of shifting.',
+    experiment: { signal: { ...RADAR_RF, signalType: 'phase-code', pulse: { ...RADAR_RF.pulse, widthSec: 1.3e-6 }, code: { enabled: true, family: 'barker', length: 13 } } },
+    tab: 'compression',
+  },
+  {
+    id: 'p4-64',
+    name: 'P4 polyphase code (64 chips)',
+    category: 'Radar & pulse compression',
+    description: 'P4, 64 chips of 16 ns: a sampled LFM. PSLR ≈ −24 dB; the spectrogram shows a stepped frequency ramp and the ambiguity function a tilted, chirp-like ridge.',
+    experiment: {
+      signal: { ...RADAR_RF, signalType: 'phase-code', pulse: { ...RADAR_RF.pulse, widthSec: 1.024e-6 }, code: { enabled: true, family: 'p4', length: 64 } },
+      analysis: { stft: { windowLength: 256 } },
+    },
+    tab: 'compression',
+  },
+  {
+    id: 'coherent-train-ambiguity',
+    name: 'Coherent train: bed of nails',
+    category: 'Radar & pulse compression',
+    description: 'Eight coherent 100 ns pulses, PRI 500 ns, matched to the whole train: +9 dB integration gain, range ambiguities at m·PRI and Doppler ambiguities at n·PRF.',
+    experiment: {
+      signal: {
+        ...RADAR_RF,
+        signalType: 'pulse-train',
+        pulse: { ...RADAR_RF.pulse, widthSec: 100e-9 },
+        repetition: { enabled: true, prfHz: 2e6, pulseCount: 8 },
+        coherence: { mode: 'coherent', reference: 'continuous' },
+        sampling: MANUAL(4e9, 32768),
+      },
+      analysis: { compression: { reference: 'train' } },
+    },
+    tab: 'compression',
+  },
+  {
+    id: 'same-energy-detection',
+    name: 'Same energy, same detectability',
+    category: 'Radar & pulse compression',
+    description: 'B: the 100 MHz LFM; A (A/B tab): the unmodulated 1 µs pulse — same amplitude and length, so the same energy and the same 33 dB output SNR at σ = 1. Turn the noise on in the Detection card: only the LFM resolves to 9 ns.',
+    experiment: { signal: { ...LFM_100, noise: { enabled: false, rms: 1 } } },
+    compareWith: { signal: { ...RADAR_RF, noise: { enabled: false, rms: 1 } } },
+    tab: 'compression',
+  },
+  {
     id: 'aliasing',
     name: 'Aliasing example',
     category: 'Sampling & DFT',
@@ -515,4 +610,4 @@ export function getPreset(id: string): Preset | undefined {
   return PRESETS.find((p) => p.id === id);
 }
 
-export const PRESET_CATEGORIES: PresetCategory[] = ['Fundamentals', 'Pulse trains', 'UWB & bandwidth', 'Power & energy', 'Instrument model', 'Sampling & DFT', 'Time–frequency', 'Experiments'];
+export const PRESET_CATEGORIES: PresetCategory[] = ['Fundamentals', 'Pulse trains', 'UWB & bandwidth', 'Power & energy', 'Instrument model', 'Radar & pulse compression', 'Sampling & DFT', 'Time–frequency', 'Experiments'];

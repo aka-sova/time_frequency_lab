@@ -1,13 +1,13 @@
 import type { AnalysisConfig, SignalConfig } from '@/types/signal';
 import type { Measurements } from './analyze';
-import { estimateSpectralExtent, pulseDuration } from './sampling';
+import { codeChipSec, estimateSpectralExtent, pulseDuration } from './sampling';
 import { isTrain, type SignalResult } from './signals';
 import { cwtCost } from './wavelet';
 import { stftCost } from './stft';
 import { formatEngineering } from '@/lib/units/format';
 
 export type WarningLevel = 'warning' | 'info';
-export type WarningFix = 'fix-sampling' | 'extend-observation';
+export type WarningFix = 'fix-sampling' | 'extend-observation' | 'enable-carrier';
 
 export interface LabWarning {
   id: string;
@@ -104,6 +104,26 @@ export function collectWarnings(
         title: 'FFT bin spacing is coarse relative to the pulse bandwidth.',
         detail: `Δf = ${fmt(m.recordBinSpacing, 'Hz')} vs expected bandwidth ≈ ${fmt(b, 'Hz')}. Increase the observation duration for a well-resolved spectrum.`,
         fix: 'extend-observation',
+      });
+  }
+
+  if (cfg.code.enabled && cfg.pulse.enabled) {
+    const perChip = sig.fs * codeChipSec(cfg);
+    if (perChip < 4)
+      out.push({
+        id: 'code-chip-samples',
+        level: 'warning',
+        title: 'Fewer than 4 samples per code chip.',
+        detail: `T_c = ${fmt(codeChipSec(cfg), 's')} holds ${perChip.toFixed(1)} samples at fₛ = ${fmt(sig.fs, 'Hz')}; the phase steps are not resolved.`,
+        fix: 'fix-sampling',
+      });
+    if (cfg.code.family !== 'barker' && !cfg.carrier.enabled && !cfg.chirp.enabled)
+      out.push({
+        id: 'code-polyphase-baseband',
+        level: 'warning',
+        title: 'A polyphase code needs a carrier.',
+        detail: 'Without a carrier the real waveform is a·cos φ_code — an amplitude pattern, not a phase code. Binary (Barker) codes work at baseband.',
+        fix: 'enable-carrier',
       });
   }
 
