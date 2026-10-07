@@ -82,7 +82,7 @@ Overlapping pulses make per-pulse weighting ambiguous → warning.
 | Metric | Definition |
 |---|---|
 | τ_c | −3 dB width of the mainlobe of \|y\| (linear interpolation) |
-| Compression ratio | FWHM of \|z_ref\| ÷ τ_c (rect pulse → 1; LFM → ≈ 1.13·TB); TB shown alongside |
+| Compression ratio | FWHM of \|z_ref\| ÷ τ_c (rect pulse → 1/(2−√2) ≈ 1.71, the triangle's −3 dB width being (2−√2)·τ; LFM → ≈ 1.13·TB); TB shown alongside |
 | Mainlobe | between the first local minima on either side of the peak |
 | PSLR | highest sidelobe outside the mainlobe ÷ peak, dB. For trains: within ±PRI/2 of the peak |
 | ISLR | sidelobe energy ÷ mainlobe energy, dB (same window as PSLR) |
@@ -94,7 +94,7 @@ Overlapping pulses make per-pulse weighting ambiguous → warning.
 | Integration loss | train reference: peak on the actual record ÷ peak on the nominal record, dB |
 | SNR_in | max\|x_ideal\|² / σ² |
 | SNR_out (theory) | Σx_ideal² / σ² (= 2E/N₀ for real white noise, N₀/2 = σ²/fₛ) minus weighting and Doppler losses |
-| SNR_out (measured) | \|y_ideal(peak)\|² / var(y_noise) |
+| SNR_out (measured) | \|y_ideal(peak)\|² / mean\|y_noise\|² over lags with full overlap, referred to the real output (+3.01 dB for bandpass: the I+Q output carries twice the noise power), with the expected single-realization scatter 4.34/√dof dB, dof ≈ (valid lag span)/τ_c |
 | Processing gain | SNR_out (measured) − SNR_in, dB |
 | ΔR | c·τ_c / 2 |
 
@@ -220,7 +220,7 @@ with overlapping pulses; ambiguity grid capped; polyphase code with carrier off 
   to it (existing `Plot` behavior).
 
 **Card 2 — Compression metrics**: `Row` table with measured and theory columns. Theory where a closed form
-exists: τ_c (LFM 0.886/B; rect τ), PSLR (LFM −13.26 dB; Barker 20·log₁₀(1/L)), delay shift (−ν/k), weighting
+exists: τ_c (LFM 0.886/B; rect (2−√2)·τ), PSLR (LFM −13.26 dB; Barker 20·log₁₀(1/L)), delay shift (−ν/k), weighting
 loss (10·log₁₀ ENBW), integration gain (10·log₁₀N). Also compression ratio vs TB, ISLR, Doppler loss, ΔR,
 integration loss, range-ambiguity peaks.
 
@@ -278,14 +278,14 @@ All open the compression tab, use auto sampling, respect Nyquist (existing test)
 
 | id | Configuration | Headline (tested) |
 |---|---|---|
-| `mf-rect-pulse` | 1 µs rect pulse, carrier on, no code/chirp | compression ratio ≈ 1; zero-delay first null at 1/T |
+| `mf-rect-pulse` | 1 µs rect pulse, carrier on, no code/chirp | τ_c = 0.586 µs, ratio ≈ 1.71 (triangle); zero-delay first null at 1/T |
 | `lfm-tb100` | 1 µs rect, LFM 0.95 → 1.05 GHz (B = 100 MHz) | τ_c ≈ 8.86 ns; PSLR ≈ −13.3 dB; ratio ≈ 113 |
 | `lfm-hamming` | as `lfm-tb100`, weighting Hamming | PSLR ≤ −40 dB; τ_c ≈ 1.47× unweighted; loss ≈ 1.34 dB |
 | `lfm-doppler-coupling` | f_c = 1 GHz, 2.5 µs rect, LFM B = 20 MHz (TB = 50), ν = 2 MHz (inside the narrowband limit: 0.1 < 0.3) | peak shift ≈ −250 ns (≈ 5 τ_c); Doppler loss ≈ 0.92 dB |
-| `barker-13` | Barker-13, carrier on | PSLR ≈ −22.3 dB |
-| `p4-64` | P4, L = 64, carrier on | PSLR ≈ −24.4 dB (below Barker-13); LFM-like ridge (peak shift sign matches an up-chirp) |
+| `barker-13` | Barker-13, carrier on, τ = 1.3 µs (whole samples per chip) | PSLR ≈ −22.3 dB |
+| `p4-64` | P4, L = 64, carrier on, τ = 1.024 µs (whole samples per chip) | PSLR ≈ −24.4 dB (below Barker-13); LFM-like ridge (peak shift sign matches an up-chirp) |
 | `coherent-train-ambiguity` | 8-pulse coherent train, reference = train | integration gain ≈ 9.03 dB; peaks at m·PRI |
-| `same-energy-detection` | `compareWith`: 1 µs unmodulated RF pulse (A) vs the same pulse with LFM B = 100 MHz (B); same amplitude and duration ⇒ same energy; noise on | SNR_out equal within 0.5 dB; τ_c 1 µs vs ≈ 8.9 ns (≈ 113×) |
+| `same-energy-detection` | `compareWith`: 1 µs unmodulated RF pulse (A) vs the same pulse with LFM B = 100 MHz (B); same amplitude and duration ⇒ same energy; noise on | SNR_out (theory) equal; τ_c 0.586 µs vs ≈ 8.9 ns (≈ 66×) |
 
 Mode switching uses the existing `minMode` derivation, no special cases: code/chirp presets → Advanced;
 `same-energy-detection` (noise on) → Expert. Accepted: the switch never goes down and offers "Back to …".
@@ -295,7 +295,7 @@ Mode switching uses the existing `minMode` derivation, no special cases: code/ch
 | File | Checks |
 |---|---|
 | `tests/codes.test.ts` | Barker aperiodic autocorrelation sidelobes ≤ 1 (exact); Frank and P4 periodic autocorrelation sidelobes = 0 (≤ 1e-9); `snapCodeLength` for each family |
-| `tests/compression.test.ts` | rect: triangle base 2τ, τ_c = τ; LFM TB ≥ 200: τ_c = 0.886/B (±2 %), PSLR −13.26 dB (±0.3 dB); Hamming: PSLR ≤ −40 dB, loss = 10·log₁₀ ENBW (±0.01 dB); Barker-13 PSLR −22.28 dB (±0.1 dB); coherent train gain 10·log₁₀N (±0.05 dB); incoherent train loss > 0; seeded noise: measured SNR_out within ±0.5 dB of Σx²/σ², equal for an unmodulated pulse and the equal-energy LFM; `'train'` without a train falls back to `'pulse'` |
+| `tests/compression.test.ts` | rect: triangle base 2τ, τ_c = (2−√2)·τ; LFM TB ≥ 200: τ_c = 0.886/B (±2 %), PSLR −13.26 dB (±0.3 dB); Hamming: PSLR ≤ −40 dB, loss = 10·log₁₀ ENBW (±0.01 dB); Barker-13 PSLR −22.28 dB (±0.1 dB); coherent train gain 10·log₁₀N (±0.05 dB); incoherent train loss > 0; seeded noise: measured SNR_out within ±0.5 dB of Σx²/σ², equal for an unmodulated pulse and the equal-energy LFM; `'train'` without a train falls back to `'pulse'` |
 | `tests/ambiguity.test.ts` | χ(0,0) = 1; volume = 1 (±2 %); zero-Doppler cut = matched-filter output; LFM ridge peak at τ = −ν/k; train peaks at (m·PRI, n·PRF) with heights (N−\|m\|)/N; zero-delay first null at 1/T; `capped` set beyond the limit |
 | `tests/dsp.test.ts` (add) | baseband binary code = ±a(u) exactly; phase steps at chip boundaries; existing coherence tests unchanged with a code on |
 | `tests/presets.test.ts` (add) | each headline in §5.2 |

@@ -231,6 +231,7 @@ export function synthesize(cfg: SignalConfig, pulses: PulseRealization[], fs: nu
   const chips = code ? code.length : 0;
   const codeHalf = 0.5 * cfg.pulse.widthSec;
   const chipSec = code ? cfg.pulse.widthSec / chips : 1;
+  // The 1e-9 guard keeps a chip boundary that falls exactly on a sample in the later chip despite rounding.
 
   for (const p of pulses) {
     const i0 = pulseOn ? Math.max(0, Math.ceil((p.tCenter - half) * fs)) : 0;
@@ -240,7 +241,7 @@ export function synthesize(cfg: SignalConfig, pulses: PulseRealization[], fs: nu
       const u = t - p.tCenter;
       const a = pulseOn ? envelopeAt(shape, u) : 1;
       if (a === 0) continue;
-      const pc = code ? code[Math.min(chips - 1, Math.max(0, Math.floor((u + codeHalf) / chipSec)))] : 0;
+      const pc = code ? code[Math.min(chips - 1, Math.max(0, Math.floor((u + codeHalf) / chipSec + 1e-9)))] : 0;
       const c = carrier.on ? Math.cos(twoPi * (p.frequencyHz * u + 0.5 * k * u * u) + p.phaseRad + pc) : code ? Math.cos(pc) : 1;
       x[i] += p.amplitude * a * c;
       const mag = Math.abs(p.amplitude * a);
