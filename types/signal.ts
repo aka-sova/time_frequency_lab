@@ -12,6 +12,7 @@ export type SignalType =
   | 'burst'
   | 'pulse-train'
   | 'chirp'
+  | 'phase-code'
   | 'composite';
 
 export type EnvelopeType =
@@ -43,6 +44,8 @@ export type JitterMode = 'random' | 'periodic';
 export type SamplingMode = 'auto' | 'manual';
 
 export type AmplitudeUnit = 'normalized' | 'V' | 'V/m';
+
+export type CodeFamily = 'barker' | 'frank' | 'p4';
 
 export interface SignalConfig {
   signalType: SignalType;
@@ -103,6 +106,14 @@ export interface SignalConfig {
     enabled: boolean;
     startFrequencyHz: number;
     endFrequencyHz: number;
+  };
+
+  /** Phase code across each pulse: L chips of T_c = τ/L (lib/dsp/codes.ts). */
+  code: {
+    enabled: boolean;
+    family: CodeFamily;
+    /** Number of chips L (snapped to a valid length for the family). */
+    length: number;
   };
 
   am: {

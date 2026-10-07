@@ -8,7 +8,7 @@ import { autoSampling } from '@/lib/dsp/sampling';
 import { deepMerge } from '@/lib/state/path';
 import { DEFAULT_ANALYSIS, DEFAULT_SIGNAL } from './defaults';
 
-export type IsolateKey = 'pulseWidth' | 'riseTime' | 'carrier' | 'prf' | 'coherence' | 'jitter' | 'chirp' | 'sampling';
+export type IsolateKey = 'pulseWidth' | 'riseTime' | 'carrier' | 'prf' | 'coherence' | 'jitter' | 'chirp' | 'code' | 'sampling';
 
 export const ISOLATE_LABELS: Record<IsolateKey, string> = {
   pulseWidth: 'pulse width',
@@ -18,6 +18,7 @@ export const ISOLATE_LABELS: Record<IsolateKey, string> = {
   coherence: 'coherence',
   jitter: 'jitter',
   chirp: 'chirp',
+  code: 'phase code',
   sampling: 'sampling rate',
 };
 
@@ -26,6 +27,7 @@ const CLEAN: Partial<SignalConfig> = {
   coherence: { ...DEFAULT_SIGNAL.coherence, mode: 'coherent' },
   jitter: { ...DEFAULT_SIGNAL.jitter, timingEnabled: false, amplitudeEnabled: false, frequencyEnabled: false },
   chirp: { ...DEFAULT_SIGNAL.chirp, enabled: false },
+  code: { ...DEFAULT_SIGNAL.code, enabled: false },
   am: { ...DEFAULT_SIGNAL.am, enabled: false },
   noise: { ...DEFAULT_SIGNAL.noise, enabled: false },
 };
@@ -93,6 +95,9 @@ export function isolate(key: IsolateKey, exp: Experiment): Experiment {
       break;
     case 'chirp':
       s = { ...s, signalType: 'chirp', carrier: { ...c.carrier, enabled: true }, pulse: { ...pulse, envelope: 'rect', edgesEnabled: false }, chirp: { ...c.chirp, enabled: true } };
+      break;
+    case 'code':
+      s = { ...s, signalType: 'phase-code', carrier: { ...c.carrier, enabled: true }, pulse: { ...pulse, envelope: 'rect', edgesEnabled: false }, code: { ...c.code, enabled: true } };
       break;
     case 'sampling':
       s = {

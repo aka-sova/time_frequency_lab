@@ -5,7 +5,7 @@ import type { Experiment, UiMode } from '@/types/signal';
 import type { IsolateKey } from '@/lib/presets/isolate';
 
 export type WorkspaceTab = 'measurements' | 'power' | 'instrument' | 'ab' | 'sweep' | 'leakage' | 'synthesis' | 'theory' | 'experiments';
-export type SectionKey = 'carrier' | 'pulse' | 'repetition' | 'coherence' | 'jitter' | 'chirp' | 'am' | 'noise' | 'sampling' | 'general';
+export type SectionKey = 'carrier' | 'pulse' | 'repetition' | 'coherence' | 'jitter' | 'chirp' | 'code' | 'am' | 'noise' | 'sampling' | 'general';
 
 export interface LabApi {
   exp: Experiment;

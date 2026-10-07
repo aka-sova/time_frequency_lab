@@ -50,7 +50,7 @@ export default function StatusBar({ explanation, onDismiss, warnings, onFix }: P
           </p>
           {w.fix ? (
             <button type="button" onClick={() => onFix(w)} className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-line-strong px-1.5 py-0.5 text-[0.6875rem] text-ink-2 hover:text-ink">
-              <Wand2 size={11} aria-hidden /> {w.fix === 'fix-sampling' ? 'Fix sampling' : 'Extend observation'}
+              <Wand2 size={11} aria-hidden /> {w.fix === 'fix-sampling' ? 'Fix sampling' : w.fix === 'enable-carrier' ? 'Turn carrier on' : 'Extend observation'}
             </button>
           ) : null}
         </div>

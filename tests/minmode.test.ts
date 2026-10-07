@@ -21,6 +21,13 @@ describe('minimumMode (derived from the signal configuration)', () => {
     expect(modeRequirements(e)[0].reason).toMatch(/chirp/);
   });
 
+  it('a phase code needs Advanced (only with a pulse envelope)', () => {
+    const e = set(DEFAULT_EXPERIMENT, [['signal.code.enabled', true]]);
+    expect(minimumMode(e)).toBe('advanced');
+    expect(modeRequirements(e)[0].reason).toMatch(/phase-code/);
+    expect(minimumMode(set(e, [['signal.pulse.enabled', false]]))).toBe('basic');
+  });
+
   it('jitter counts only for a pulse train', () => {
     expect(minimumMode(set(DEFAULT_EXPERIMENT, [['signal.jitter.timingEnabled', true]]))).toBe('basic');
     expect(minimumMode(set(train(DEFAULT_EXPERIMENT), [['signal.jitter.timingEnabled', true]]))).toBe('advanced');

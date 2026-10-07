@@ -3,7 +3,7 @@
  *
  * General model (each term optional):
  *
- *   x(t) = m(t) · Σ_n A_n · a(t − t_n) · cos[ 2π( f_{0,n}(t − t_n) + ½k(t − t_n)² ) + φ_n ]
+ *   x(t) = m(t) · Σ_n A_n · a(t − t_n) · cos[ 2π( f_{0,n}u + ½k·u² ) + φ_n + φ_code(u) ],  u = t − t_n
  *
  *   a(·)   pulse envelope (rect/trapezoid, Gaussian family, windows)
  *   m(t)   optional amplitude modulation 1 + μ·cos(2π f_m t)
@@ -12,6 +12,8 @@
  *   f_{0,n} carrier per pulse (optional frequency jitter)
  *   k      linear-FM chirp rate
  *   φ_n    pulse phase (coherence model)
+ *   φ_code optional phase code: chip m = ⌊(u + τ/2)/T_c⌋, T_c = τ/L, the same on every pulse
+ *          (carrier off: the carrier term becomes cos φ_code, i.e. ±1 for binary codes)
  *
  * The waveform is evaluated analytically at arbitrary instants, so the same
  * model is used for the sampled record and for the dense "physical" reference
@@ -21,6 +23,7 @@ import type { EnvelopeType, SignalConfig } from '@/types/signal';
 import { RNG_STREAM, createRng } from './random';
 import { windowValue } from './windows';
 import { resolveSampling } from './sampling';
+import { codePhases } from './codes';
 
 export const FWHM_TO_SIGMA = 1 / (2 * Math.sqrt(2 * Math.LN2));
 /** 10–90 % transition of a linear ramp spans 80 % of the ramp duration. */
@@ -224,6 +227,10 @@ export function synthesize(cfg: SignalConfig, pulses: PulseRealization[], fs: nu
   const k = carrier.chirpRate;
   const am = cfg.am.enabled;
   const twoPi = 2 * Math.PI;
+  const code = cfg.code.enabled && pulseOn ? codePhases(cfg.code.family, cfg.code.length) : null;
+  const chips = code ? code.length : 0;
+  const codeHalf = 0.5 * cfg.pulse.widthSec;
+  const chipSec = code ? cfg.pulse.widthSec / chips : 1;
 
   for (const p of pulses) {
     const i0 = pulseOn ? Math.max(0, Math.ceil((p.tCenter - half) * fs)) : 0;
@@ -233,7 +240,8 @@ export function synthesize(cfg: SignalConfig, pulses: PulseRealization[], fs: nu
       const u = t - p.tCenter;
       const a = pulseOn ? envelopeAt(shape, u) : 1;
       if (a === 0) continue;
-      const c = carrier.on ? Math.cos(twoPi * (p.frequencyHz * u + 0.5 * k * u * u) + p.phaseRad) : 1;
+      const pc = code ? code[Math.min(chips - 1, Math.max(0, Math.floor((u + codeHalf) / chipSec)))] : 0;
+      const c = carrier.on ? Math.cos(twoPi * (p.frequencyHz * u + 0.5 * k * u * u) + p.phaseRad + pc) : code ? Math.cos(pc) : 1;
       x[i] += p.amplitude * a * c;
       const mag = Math.abs(p.amplitude * a);
       env[i] += mag;

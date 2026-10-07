@@ -7,6 +7,7 @@ import { generateSignal, envelopeAt, pulseShapeFromConfig } from '@/lib/dsp/sign
 import { aliasFrequency, resolveSampling } from '@/lib/dsp/sampling';
 import { analyzeLight } from '@/lib/dsp/analyze';
 import { createRng } from '@/lib/dsp/random';
+import { collectWarnings } from '@/lib/dsp/warnings';
 import { DEFAULT_EXPERIMENT, mergeExperiment } from '@/lib/presets/defaults';
 import type { DeepPartial, Experiment } from '@/types/signal';
 
@@ -327,5 +328,77 @@ describe('pulse trains', () => {
     const a = generateSignal(train({ jitter: { timingEnabled: true, timingRmsSec: 1e-9 } }).signal).pulses.map((p) => p.tCenter);
     const b = generateSignal(train({ jitter: { timingEnabled: true, timingRmsSec: 1e-9, amplitudeEnabled: true } }).signal).pulses.map((p) => p.tCenter);
     expect(a).toEqual(b);
+  });
+});
+
+describe('phase codes in the signal model', () => {
+  const coded = (p: DeepPartial<Experiment>) =>
+    exp({ signal: { signalType: 'phase-code', repetition: { enabled: false }, ...p.signal, code: { enabled: true, ...p.signal?.code } } });
+
+  it('baseband Barker-13 is exactly ±1 inside the pulse, with the Barker sign sequence', () => {
+    const e = coded({ signal: { carrier: { enabled: false }, pulse: { envelope: 'rect', widthSec: 1.3e-6 }, code: { family: 'barker', length: 13 }, sampling: manual(100e6, 1024) } });
+    const s = generateSignal(e.signal);
+    const tc = s.observation / 2;
+    for (let i = 0; i < s.n; i++) {
+      const u = s.t[i] - tc;
+      if (Math.abs(u) < 0.65e-6 - 1e-12) expect(Math.abs(s.x[i])).toBe(1);
+    }
+    const signs = Array.from({ length: 13 }, (_, m) => (s.x[452 + 10 * m] > 0 ? '+' : '-')).join('');
+    expect(signs).toBe('+++++--++-+-+');
+  });
+
+  it('adds the chip phase to the carrier phase', () => {
+    const e = coded({ signal: { carrier: { enabled: true, frequencyHz: 1e9 }, pulse: { envelope: 'rect', widthSec: 100e-9 }, code: { family: 'barker', length: 5 }, sampling: manual(10e9, 4096) } });
+    const s = generateSignal(e.signal);
+    const tc = s.observation / 2;
+    const pattern = '+++-+';
+    for (let m = 0; m < 5; m++) {
+      const i = 2048 - 500 + 100 + 200 * m;
+      const u = s.t[i] - tc;
+      const want = Math.cos(2 * Math.PI * 1e9 * u + (pattern[m] === '+' ? 0 : Math.PI));
+      expect(s.x[i]).toBeCloseTo(want, 9);
+    }
+  });
+
+  it('applies the same code to every pulse of a train', () => {
+    const e = coded({
+      signal: {
+        signalType: 'pulse-train',
+        carrier: { enabled: true, frequencyHz: 1e9 },
+        pulse: { envelope: 'rect', widthSec: 100e-9 },
+        repetition: { enabled: true, prfHz: 5e6, pulseCount: 4 },
+        coherence: { mode: 'coherent', reference: 'pulse' },
+        code: { family: 'barker', length: 7 },
+        sampling: manual(10e9, 16384),
+      },
+    });
+    const s = generateSignal(e.signal);
+    for (const shift of [-3000, -1000, 1000, 3000]) {
+      for (let i = 8192 - 499; i <= 8192 + 499; i++) expect(s.xIdeal[i + shift]).toBeCloseTo(s.singlePulse[i], 9);
+    }
+  });
+
+  it('has no effect without a pulse envelope', () => {
+    const base = exp({ signal: { signalType: 'sinusoid', pulse: { enabled: false }, repetition: { enabled: false }, sampling: manual(10e9, 1024) } });
+    const withCode = mergeExperiment(base, { signal: { code: { enabled: true, family: 'p4', length: 16 } } });
+    expect(Array.from(generateSignal(withCode.signal).x)).toEqual(Array.from(generateSignal(base.signal).x));
+  });
+});
+
+describe('phase codes: sampling and warnings', () => {
+  it('auto sampling resolves Barker-13 chips with ≥ 4 samples each', () => {
+    const e = exp({ signal: { signalType: 'phase-code', carrier: { enabled: true, frequencyHz: 1e9 }, pulse: { envelope: 'rect', widthSec: 1e-6 }, code: { enabled: true, family: 'barker', length: 13 } } });
+    const { fs } = resolveSampling(e.signal);
+    expect(fs * (1e-6 / 13)).toBeGreaterThanOrEqual(4);
+  });
+
+  it('warns about a polyphase code without a carrier and about too few samples per chip', () => {
+    const e = exp({
+      signal: { signalType: 'phase-code', carrier: { enabled: false }, pulse: { envelope: 'rect', widthSec: 1e-6 }, code: { enabled: true, family: 'p4', length: 64 }, sampling: manual(100e6, 1024) },
+    });
+    const a = analyzeLight(e);
+    const ids = collectWarnings(e.signal, e.analysis, a.signal, a.measurements, { stft: false, cwt: false }).map((w) => w.id);
+    expect(ids).toContain('code-polyphase-baseband');
+    expect(ids).toContain('code-chip-samples');
   });
 });

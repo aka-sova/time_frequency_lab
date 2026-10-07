@@ -6,12 +6,13 @@
 import type { Experiment } from '@/types/signal';
 import { DEFAULT_EXPERIMENT } from '@/lib/presets/defaults';
 import { MAX_SAMPLES, MIN_SAMPLES } from '@/lib/dsp/sampling';
+import { snapCodeLength } from '@/lib/dsp/codes';
 import { getPath, isPlainObject, setPath } from './path';
 
 type Rule = { path: string; min?: number; max?: number; int?: boolean; values?: readonly string[] };
 
 export const ENUMS = {
-  signalType: ['sinusoid', 'rect', 'gaussian', 'gaussian-derivative', 'burst', 'pulse-train', 'chirp', 'composite'],
+  signalType: ['sinusoid', 'rect', 'gaussian', 'gaussian-derivative', 'burst', 'pulse-train', 'chirp', 'phase-code', 'composite'],
   envelope: ['rect', 'gaussian', 'gaussian-d1', 'gaussian-d2', 'hann', 'hamming', 'blackman', 'tukey'],
   edgeShape: ['linear', 'cosine'],
   coherence: ['coherent', 'increment', 'partial', 'incoherent'],
@@ -31,6 +32,7 @@ export const ENUMS = {
   phaseUnit: ['deg', 'rad'],
   phaseRef: ['center', 'start'],
   ampUnit: ['normalized', 'V', 'V/m'],
+  codeFamily: ['barker', 'frank', 'p4'],
 } as const;
 
 const RULES: Rule[] = [
@@ -62,6 +64,7 @@ const RULES: Rule[] = [
   { path: 'signal.jitter.seed', min: 0, max: 2 ** 31, int: true },
   { path: 'signal.chirp.startFrequencyHz', min: 0, max: 1e12 },
   { path: 'signal.chirp.endFrequencyHz', min: 0, max: 1e12 },
+  { path: 'signal.code.family', values: ENUMS.codeFamily },
   { path: 'signal.am.depth', min: 0, max: 1 },
   { path: 'signal.am.frequencyHz', min: 0, max: 1e12 },
   { path: 'signal.noise.rms', min: 0, max: 1e6 },
@@ -134,5 +137,7 @@ export function sanitizeExperiment(input: unknown, base: Experiment = DEFAULT_EX
       if (x !== v) exp = setPath(exp, r.path, x);
     }
   }
+  const len = snapCodeLength(exp.signal.code.family, exp.signal.code.length);
+  if (len !== exp.signal.code.length) exp = setPath(exp, 'signal.code.length', len);
   return exp;
 }

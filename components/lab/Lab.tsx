@@ -68,6 +68,8 @@ function LabInner() {
           ['signal.sampling.sampleCount', a.sampleCount],
           ['signal.sampling.aliasingDemo', false],
         ]);
+      } else if (w.fix === 'enable-carrier') {
+        api.update('signal.carrier.enabled', true);
       } else if (w.fix === 'extend-observation') {
         const { fs, n } = resolveSampling(s);
         const span = s.repetition.enabled ? (s.repetition.pulseCount + 1) / s.repetition.prfHz : 0;

@@ -62,3 +62,27 @@ describe('units', () => {
     expect(waveformCsv(sig, 'V/m').split('\n')[0]).toContain('V_per_m');
   });
 });
+
+describe('phase-code config', () => {
+  it('defaults to a disabled Barker-13', () => {
+    expect(DEFAULT_EXPERIMENT.signal.code).toEqual({ enabled: false, family: 'barker', length: 13 });
+  });
+  it('sanitize snaps the length to the family and rejects unknown families', () => {
+    let e = setPath(DEFAULT_EXPERIMENT, 'signal.code', { enabled: true, family: 'frank', length: 50 });
+    expect(sanitizeExperiment(e).signal.code).toEqual({ enabled: true, family: 'frank', length: 49 });
+    e = setPath(DEFAULT_EXPERIMENT, 'signal.code', { enabled: true, family: 'golay', length: 7 });
+    expect(sanitizeExperiment(e).signal.code.family).toBe('barker');
+    e = setPath(DEFAULT_EXPERIMENT, 'signal.code', { enabled: true, family: 'p4', length: 1e6 });
+    expect(sanitizeExperiment(e).signal.code.length).toBe(256);
+    e = setPath(DEFAULT_EXPERIMENT, 'signal.signalType', 'phase-code');
+    expect(sanitizeExperiment(e).signal.signalType).toBe('phase-code');
+  });
+  it('URL round-trips a P4-37 code', () => {
+    const e = setPath(DEFAULT_EXPERIMENT, 'signal.code', { enabled: true, family: 'p4', length: 37 });
+    const q = experimentToQuery(e, 'default');
+    expect(q).toContain('pce=1');
+    expect(q).toContain('pcf=p4');
+    expect(q).toContain('pcl=37');
+    expect(queryToExperiment(q)!.experiment.signal.code).toEqual({ enabled: true, family: 'p4', length: 37 });
+  });
+});

@@ -51,6 +51,20 @@ describe('presets', () => {
   });
 });
 
+describe('isolate phase code', () => {
+  it('keeps family and length and clears unrelated effects', () => {
+    let e = setPath(DEFAULT_EXPERIMENT, 'signal.code', { enabled: true, family: 'frank', length: 36 });
+    e = setPath(setPath(e, 'signal.repetition.enabled', true), 'signal.jitter.timingEnabled', true);
+    const iso = isolate('code', e);
+    expect(iso.signal.code).toEqual({ enabled: true, family: 'frank', length: 36 });
+    expect(iso.signal.signalType).toBe('phase-code');
+    expect(iso.signal.carrier.enabled).toBe(true);
+    expect(iso.signal.repetition.enabled).toBe(false);
+    expect(iso.signal.jitter.timingEnabled).toBe(false);
+    expect(isolate('chirp', e).signal.code.enabled).toBe(false);
+  });
+});
+
 describe('URL state', () => {
   it('round-trips an experiment through the query string', () => {
     let e = buildPresetExperiment(PRESETS.find((p) => p.id === 'coherent-train')!);
