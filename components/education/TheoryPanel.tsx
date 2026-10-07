@@ -16,6 +16,8 @@ const TABLE: [string, string, string][] = [
   ['Coherence', 'Changes pulse phase relation', 'Changes comb sharpness'],
   ['Timing jitter', 'Perturbs pulse positions', 'Smears spectral lines'],
   ['Chirp', 'Frequency changes during pulse', 'Broadens occupied spectrum'],
+  ['Phase code length L', 'Chips of T_c = τ/L', 'Bandwidth ≈ L/τ; compressed width ≈ T_c'],
+  ['Matched-filter weighting', 'Tapers the reference', 'Lower range sidelobes, wider mainlobe, SNR loss'],
   ['Sampling rate', 'Changes digital representation', 'Determines Nyquist range'],
   ['Observation time', 'Changes captured duration', 'Changes DFT bin spacing'],
   ['Window', 'Changes observation weighting', 'Main-lobe/sidelobe tradeoff'],
@@ -27,6 +29,8 @@ const MISTAKES: [string, string][] = [
   ['Broadband means incoherent.', 'Bandwidth and coherence are distinct signal properties.'],
   ['A wavelet is perfectly finite in both time and frequency.', 'Wavelets achieve useful localization in both domains while obeying the time–frequency uncertainty principle.'],
   ['Zero padding improves true frequency resolution.', 'Zero padding interpolates the DFT representation but does not add information.'],
+  ['A longer pulse always means worse range resolution.', 'After pulse compression the resolution is set by the bandwidth (ΔR ≈ c/2B); the pulse length sets the energy, i.e. the detectability.'],
+  ['Weighting the matched filter improves it.', 'Weighting lowers the range sidelobes at the cost of a wider mainlobe and an SNR loss of 10·log₁₀(ENBW); the unweighted matched filter is the SNR optimum.'],
   ['The FFT is a different transform from the Fourier transform.', 'The FFT is an efficient algorithm for computing the DFT, the discrete finite representation of the Fourier transform.'],
 ];
 
@@ -91,6 +95,19 @@ export default function TheoryPanel() {
         </Card>
         <Card title="Sampling does not create bandwidth">
           <AliasingChain />
+        </Card>
+        <Card title="Matched filter, pulse compression and ambiguity">
+          <p>
+            Correlating the echo with the transmitted pulse, <Tex>{'y(\\tau)=\\int x_r(t)\\,s^*(t-\\tau)\\,dt'}</Tex>, maximizes the peak signal-to-noise ratio in white noise:{' '}
+            <Tex>{'\\mathrm{SNR}_{\\text{out}}=2E/N_0'}</Tex> — it depends only on the pulse <strong className="text-ink">energy</strong>, not on its shape. The output is about <Tex>{'1/B'}</Tex> wide, so a long
+            pulse with a large bandwidth (chirp, phase code) is <strong className="text-ink">compressed</strong> by <Tex>{'\\approx TB'}</Tex>: long pulses give energy, bandwidth gives resolution. An LFM compresses to{' '}
+            <Tex>{'\\tau_c\\approx0.886/B'}</Tex> with −13.3 dB sidelobes; tapering the reference trades them for a wider mainlobe and an SNR loss.
+          </p>
+          <p className="mt-2">
+            The ambiguity function <Tex>{'\\chi(\\tau,\\nu)=\\tfrac1E\\int s(t)\\,s^*(t-\\tau)\\,e^{j2\\pi\\nu t}dt'}</Tex> is the output for every delay and Doppler mismatch. Its volume is fixed,{' '}
+            <Tex>{'\\iint|\\chi|^2d\\tau\\,d\\nu=1'}</Tex>: a waveform can move ambiguity around but never remove it — the two-dimensional form of <Tex>{'\\sigma_t\\sigma_f\\ge1/4\\pi'}</Tex>. Doppler is
+            modeled as a frequency shift (narrowband); for very wideband pulses a real Doppler shift scales the waveform in time instead.
+          </p>
         </Card>
       </div>
       <Card title="Parameter → effect">

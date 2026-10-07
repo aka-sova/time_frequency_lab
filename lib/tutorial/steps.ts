@@ -251,6 +251,16 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
       ...loadPreset('scope-bandwidth-limit'),
     },
   },
+  {
+    ...tabStep('compression', 'Tab: Pulse compression', [
+      'A radar receiver correlates the echo with the transmitted pulse — the **matched filter**. This tab shows its output, the **compressed width τ_c** and range sidelobes, the SNR in noise and the **ambiguity function**: the output for every delay and Doppler shift.',
+      'The preset below is a 1 µs chirp sweeping 100 MHz: the matched filter compresses it to about 9 ns. Click the heatmap to add a Doppler shift and watch the peak move.',
+    ]),
+    action: {
+      prompt: 'Choose **Radar & pulse compression → LFM pulse compression (TB = 100)** from the Preset menu.',
+      ...loadPreset('lfm-tb100'),
+    },
+  },
   tabStep('experiments', 'Tab: Guided experiments', [
     'Step-by-step lessons. Each one loads a preset, tells you which control to change and what you should observe — for example shortening the pulse, raising the PRF, destroying coherence or undersampling to create aliasing.',
   ]),

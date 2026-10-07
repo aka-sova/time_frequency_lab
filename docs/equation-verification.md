@@ -21,5 +21,24 @@ Additional numerical checks: overlapping-pulse average power is verified against
 shifted copies (`tests/power.test.ts`); the cubic interpolation used to sample the filtered waveform
 is verified to < 10⁻³ at 32× oversampling (`tests/instrument.test.ts`).
 
+## Pulse compression and phase codes
+
+| # | Equation | Method | Result | Test |
+|---|---|---|---|---|
+| P1 | Barker aperiodic autocorrelation sidelobes ≤ 1, PSLR = 1/L | exhaustive over the 7 tables | all ≤ 1; Barker-13: −22.28 dB | `tests/codes.test.ts` |
+| P2 | Frank (L = M²) and P4 have zero periodic-autocorrelation sidelobes | L = 4…100 / 2…255 | < 10⁻⁹·L | `tests/codes.test.ts` |
+| P3 | Matched filter of a rect pulse = triangle of base 2τ; τ_c(−3 dB) = (2 − √2)·τ | 1 µs pulse at 1 GHz | within 1 % | `tests/compression.test.ts`; preset *mf-rect-pulse* |
+| P4 | LFM: τ_c = 0.886/B, PSLR = −13.26 dB, ratio ≈ 1.13·TB | TB = 100 and 200 | τ_c within 2 %, PSLR within 0.3 dB | `tests/compression.test.ts`; preset *lfm-tb100* |
+| P5 | Weighting SNR loss = 10·log₁₀(ENBW) for a constant envelope | Hamming, TB = 200 | 1.34 dB within 0.02 dB; PSLR ≤ −40 dB; mainlobe × 1.47 | `tests/compression.test.ts`; preset *lfm-hamming* |
+| P6 | LFM range–Doppler coupling τ = −ν/k, peak \|χ\| = 1 − \|ν\|/B | B = 20 MHz, T = 2.5 µs, ν = 2 MHz; ambiguity row at 20 MHz for B = 100 MHz | −250 ns within 2 %; 0.92 dB; 0.80 within 0.02 | `tests/compression.test.ts`, `tests/ambiguity.test.ts` |
+| P7 | SNR_out = 2E/N₀ = Σx²/σ², independent of the waveform | seeded noise; average of the (unbiased) noise-variance estimate over 8 seeds on 32 µs records | within 0.5 dB, for single pulse, LFM and train references. Bandpass outputs are referred to the real output (I+Q carries 2× the noise power) | `tests/compression.test.ts` |
+| P8 | Coherent integration gain 10·log₁₀N; train ambiguities (N − \|m\|)/N at m·PRI | 8 pulses, PRI 500 ns | 9.03 dB; −1.16 dB at ±PRI | `tests/compression.test.ts`, `tests/ambiguity.test.ts` |
+| P9 | χ(0, 0) = 1, ∬\|χ\|² dτ dν = 1 | Gaussian RF pulse, Doppler span covering the spectrum | 1 to 10⁻⁹; volume within 2 % | `tests/ambiguity.test.ts` |
+| P10 | Zero-delay cut \|χ(0, ν)\| = \|FT{\|z\|²}\|: rect → \|sinc(νT)\|; train → nulls at odd multiples of 1/(2·PRI) | 1 µs pulse; 8-pulse train | first null at 1/T within 3 %; \|χ(0, PRF)\| = sinc(0.2) within 0.005 | `tests/ambiguity.test.ts` |
+
+Two estimation details were found while testing and are handled in the code: the noise-variance estimate must use only
+lags with full reference overlap (the Hilbert tails of a gated carrier are not a valid support), and its scatter follows
+the filter's noise correlation length Σ|R_h|²/R_h(0)², which for a train reference includes the repeats at m·PRI.
+
 **Outcome:** no errors were found in the source page's equations. Two caveats are stated in the UI
 and above (E5 and E6); one implementation was upgraded (E4).

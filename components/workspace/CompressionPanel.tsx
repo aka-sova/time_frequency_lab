@@ -12,7 +12,7 @@ import { snapCodeLength } from '@/lib/dsp/codes';
 import { makeWindow, windowStats } from '@/lib/dsp/windows';
 import { chooseUnit, formatDb, formatEngineering, formatNumber, FREQ_UNITS, TIME_UNITS } from '@/lib/units/format';
 import { useLab } from '@/components/lab/context';
-import { EngineeringInput, NumberField, Segmented, SelectField, SmallButton, ToggleField } from '@/components/controls/primitives';
+import { EngineeringInput, FieldLabel, NumberField, Segmented, SelectField, SmallButton, ToggleField } from '@/components/controls/primitives';
 import Plot from '@/components/plots/Plot';
 import { axis, baseLayout } from '@/components/plots/theme';
 import { usePalette } from '@/components/layout/ThemeProvider';
@@ -203,7 +203,7 @@ export default function CompressionPanel({ signal }: { signal: SignalResult }) {
       <Card title="Matched filter" className="lg:col-span-2">
         <div className="mb-2 flex flex-wrap items-end gap-x-4 gap-y-1">
           <div className="py-1">
-            <p className="mb-0.5 text-[0.6875rem] text-ink-2">Reference</p>
+            <FieldLabel label="Reference" tip="compressionReference" />
             <Segmented
               size="xs"
               ariaLabel="Matched-filter reference"
@@ -340,7 +340,7 @@ export default function CompressionPanel({ signal }: { signal: SignalResult }) {
 
       <Card title={`Ambiguity function — ${train ? 'nominal train' : 'reference pulse'}`} className="lg:col-span-2">
         <div className="mb-2 flex flex-wrap items-end gap-x-4 gap-y-1">
-          <ToggleField label="Auto span" path="analysis.compression.ambiguity.autoSpan" />
+          <ToggleField label="Auto span" path="analysis.compression.ambiguity.autoSpan" tip="ambiguitySpan" />
           {!cs.ambiguity.autoSpan ? (
             <>
               <div className="min-w-[14rem] flex-1">
@@ -365,7 +365,7 @@ export default function CompressionPanel({ signal }: { signal: SignalResult }) {
             </SmallButton>
           )}
           <div className="w-40">
-            <NumberField label="Dynamic range" path="analysis.compression.ambiguity.dbRange" min={10} max={120} step={5} suffix="dB" slider={false} />
+            <NumberField label="Dynamic range" path="analysis.compression.ambiguity.dbRange" min={10} max={120} step={5} suffix="dB" slider={false} tip="ambiguityRange" />
           </div>
         </div>
         <div className={stale ? 'opacity-60 transition-opacity' : 'transition-opacity'}>

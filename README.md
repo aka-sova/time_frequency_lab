@@ -28,6 +28,10 @@ generated waveform or from a clearly labeled analytical formula.
 | PRF ↑ | average power ∝ PRF (peak power fixed) until pulses overlap |
 | instrument BW ↓ | displayed peak ↓ and FWHM ↑ even at a high sample rate |
 | trigger jitter σ_j ↑ | averaged pulse widens: σ_avg = √(σ² + σ_j²), peak × σ/σ_avg |
+| chirp / code bandwidth B ↑ at fixed T | matched-filter output narrows as ≈ 1/B; output SNR (2E/N₀) unchanged |
+| reference weighting | range sidelobes ↓, mainlobe ↑, SNR loss = 10·log₁₀(ENBW) |
+| Doppler on LFM vs Barker | LFM peak shifts by −ν/k (range–Doppler coupling); Barker peak collapses |
+| coherent train, train reference | +10·log₁₀N integration gain; ambiguities at m·PRI and n·PRF (bed of nails) |
 
 and that *short time localization ⇔ broad frequency content* is a property of the waveform and of
 Fourier analysis, not an artifact of sampling.
@@ -71,6 +75,8 @@ The app is a single statically prerendered Next.js page; all computation runs in
 - **Jitter**: timing (random Gaussian or deterministic sinusoidal), amplitude, carrier frequency — all
   seeded and reproducible; each effect uses an independent random stream.
 - **Chirp (LFM)**: start/end frequency, up/down swap, f_inst overlay, k, B ≈ |k|T and TBP readouts.
+- **Phase codes**: Barker (2–13), Frank (L = M²) and P4 (2–256 chips) across the pulse, with or without a carrier
+  (binary codes are ±1 at baseband); T_c, B ≈ 1/T_c, TB ≈ L and the expected Barker PSLR.
 - **AM and additive noise** (expert mode).
 - **Sampling**: auto/manual fₛ and N, observation time, ADC quantization (bits, measured SQNR),
   aliasing demonstration with a dense *physical* reference waveform and spectrum.
@@ -94,6 +100,12 @@ The app is a single statically prerendered Next.js page; all computation runs in
   bandwidth limit, scope sampling (rate and phase) and an optional ADC clip, with true-vs-displayed
   peak, FWHM and rise time, plus small rise-time-budget and first-order power-uncertainty calculators.
   Equations and their checks: [docs/equation-verification.md](docs/equation-verification.md).
+- **Pulse compression** (tab): matched filter against one clean pulse or the nominal train (known taper and phase
+  steps, no random effects), optional reference weighting (Hann … Blackman-Harris) and a narrowband Doppler mismatch ν.
+  Output normalized to a constant noise level, so a drop below 0 dB is an SNR loss. Measured vs theory: τ_c, compression
+  ratio, TB, PSLR/ISLR, weighting and Doppler loss, range–Doppler shift, ΔR = c·τ_c/2, integration gain/loss and range
+  ambiguities. Detection in noise: E, 2E/N₀ and one noise realization with its expected scatter. Ambiguity function
+  |χ(τ, ν)| heatmap (click to set ν; narrowband-limit lines) with an exact zero-delay cut, χ(0,0) and volume checks.
 - **Plot navigation**: drag to zoom; **double-click** a plot to return to its current view (the range chosen by Fit /
   Full record / the preset). Plotly's built-in double-click is replaced because it restores the range from the first draw,
   which is stale after a preset, Fit or unit change.
@@ -107,7 +119,7 @@ The app is a single statically prerendered Next.js page; all computation runs in
   mode that shows them, says why in the message bar and offers **Back to Basic**. It never switches down, and a link that
   names a mode keeps it. The minimum is derived from the signal configuration in `lib/presets/minMode.ts`; a preset can add
   its own requirement with `Preset.minMode`, and `tests/minmode.test.ts` pins the result for every preset.
-- **Tutorial**: the **Tutorial** button in the top bar opens a 25-step guided tour (Next / Previous / X, Esc to close). A card
+- **Tutorial**: the **Tutorial** button in the top bar opens a 26-step guided tour (Next / Previous / X, Esc to close). A card
   explains each area while the matching part of the screen is highlighted; some steps ask you to act (change the mode,
   load a preset, save A) and unlock **Next** when done, or you can press **Do it for me**. It covers the layout, mode
   selection, the control panel, two preset demonstrations and every workspace tab. The card can be dragged. Content lives
@@ -115,7 +127,7 @@ The app is a single statically prerendered Next.js page; all computation runs in
 - **Text size**: − / + buttons in the header scale all UI text and plot fonts from 50 % to 300 % in 10 % steps
   (click the percentage to reset). The setting is remembered in the browser. Above ~250 % on a narrow window the
   page scrolls horizontally, because layout breakpoints do not follow the text scale.
-- **Workflow**: 36 presets (configuration data), Basic/Advanced/Expert modes, *Isolate effect* buttons,
+- **Workflow**: 44 presets (configuration data), Basic/Advanced/Expert modes, *Isolate effect* buttons,
   parameter locks, A/B comparison with difference table, parameter sweeps, per-section reset, undo,
   shareable URL (`?preset=coherent-train&f0=1e9&pw=1e-8&prf=1e6`), CSV/JSON export, JSON import, PNG
   export from each plot's toolbar.
@@ -161,6 +173,9 @@ The DSP engine has no React dependency:
 | `power.ts` | power / energy in V·R and V/m·η₀, periodic average power with overlap folding |
 | `pulsewidth.ts` | pulse width by amplitude, power or cumulative-energy definition |
 | `instrument.ts`, `budget.ts` | bandwidth / jitter / sampling / clip model; rise-time and uncertainty budgets |
+| `codes.ts` | Barker / Frank / P4 phase codes and length snapping |
+| `compression.ts` | matched filter: reference (pulse / nominal train), weighting, Doppler mismatch, metrics, SNR |
+| `ambiguity.ts` | narrowband ambiguity function on a band-limited, downconverted reference; exact zero-delay cut |
 | `leakage.ts`, `synthesis.ts`, `sweep.ts`, `warnings.ts`, `decimate.ts` | demos, sweeps, warnings, display decimation |
 
 Performance: the record is regenerated and transformed synchronously (typical 4 k–32 k samples, max
@@ -198,6 +213,12 @@ data (re-decimated for the zoomed range, so peaks are never lost).
 - **CWT normalization**: unit-peak analytic filters (×2 on positive frequencies), so a tone A·cos gives
   |W| = A at its frequency for every scale (L¹-type, display-oriented).
 - **Random numbers**: mulberry32 with per-effect streams derived from the seed.
+- **Matched filter**: y(τ) = Σ z_r(t)·h*(t − τ) on the analytic signal (bandpass: carrier or chirp on) or the real
+  samples (baseband), normalized by √(E·Σ|h|²) — the matched peak is 1 and a lower peak is the SNR loss.
+  Output SNR is quoted for the real output (peak² over mean noise power): 2E/N₀ = Σx²/σ².
+- **Ambiguity function**: χ(τ, ν) = Σ z(t)·z*(t − τ)·e^{j2πνt} / E, the same sign convention as the matched filter
+  (the row at ν is the output with Doppler mismatch ν; an up-chirp ridge runs through τ = −ν/k).
+- **Phase codes**: chip m = ⌊(u + τ/2)/T_c⌋, T_c = τ/L across the pulse-width parameter τ; rectangular chips.
 
 ## Limitations
 
@@ -213,5 +234,12 @@ data (re-decimated for the zoomed range, so peaks are never lost).
   infinite average (no noise); real instruments and sensors have other responses. The rise-time
   quadrature rule `√Σt²` is exact for Gaussian responses and ≈ 8 % low for cascaded single poles.
 - Power density in V/m is the far-field plane-wave relation S = E²/η₀, not antenna or radiated power.
+- Doppler is a narrowband frequency shift; a warning appears when |ν|·B·T/f_c ≥ 0.3 (a real Doppler shift scales
+  the waveform in time). The ambiguity heatmap is band-limited to 99 % of the reference energy plus the Doppler span
+  (sidelobe levels within ≈ 1 dB) and capped at 8192 resampled points; the zero-delay cut is exact.
+- Phase-code chips are rectangular (instantaneous phase steps); a chip boundary between samples adds a small
+  discretization error (≈ 0.1 dB on a Barker PSLR) — the presets use whole samples per chip.
+- The measured output SNR is one noise realization; its expected scatter (shown) follows from the filter's noise
+  correlation length and can exceed 1 dB for a narrowband filter or a train reference on a short record.
 - This is educational DSP/RF visualization software with normalized amplitudes — not an operational
   effects simulator.

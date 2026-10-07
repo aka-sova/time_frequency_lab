@@ -37,13 +37,21 @@ export default function MathPanel() {
   const parts: { label: string; tex: string }[] = [];
 
   const env = s.pulse.enabled ? 'a(t)' : '';
-  const carrierTex = cm.on ? (s.chirp.enabled ? '\\cos\\!\\left[2\\pi\\left(f_c t+\\tfrac{k}{2}t^2\\right)+\\phi\\right]' : '\\cos(2\\pi f_0 t+\\phi)') : '';
+  const code = s.code.enabled && s.pulse.enabled;
+  const codeTex = code ? '+\\varphi_{\\text{code}}(t)' : '';
+  const carrierTex = cm.on
+    ? s.chirp.enabled
+      ? `\\cos\\!\\left[2\\pi\\left(f_c t+\\tfrac{k}{2}t^2\\right)+\\phi${codeTex}\\right]`
+      : `\\cos(2\\pi f_0 t+\\phi${codeTex})`
+    : code
+      ? '\\cos\\varphi_{\\text{code}}(t)'
+      : '';
   const amTex = s.am.enabled ? '\\left[1+\\mu\\cos(2\\pi f_m t)\\right]' : '';
   const single = `${amTex}A\\,${env}${carrierTex}` || 'A';
   if (train) {
     parts.push({
       label: 'Signal (pulse train)',
-      tex: `x(t)=${amTex}\\sum_{n=0}^{N-1}A_n\\,a(t-t_n)${cm.on ? `\\cos\\!\\left[2\\pi\\left(f_{0,n}(t-t_n)${s.chirp.enabled ? '+\\tfrac{k}{2}(t-t_n)^2' : ''}\\right)+\\phi_n\\right]` : ''}`,
+      tex: `x(t)=${amTex}\\sum_{n=0}^{N-1}A_n\\,a(t-t_n)${cm.on ? `\\cos\\!\\left[2\\pi\\left(f_{0,n}(t-t_n)${s.chirp.enabled ? '+\\tfrac{k}{2}(t-t_n)^2' : ''}\\right)+\\phi_n${code ? '+\\varphi_{\\text{code}}(t-t_n)' : ''}\\right]` : code ? '\\cos\\varphi_{\\text{code}}(t-t_n)' : ''}`,
     });
     parts.push({ label: 'Pulse times', tex: `t_n = nT_r${s.jitter.timingEnabled ? '+\\Delta t_n,\\ \\Delta t_n\\sim\\mathcal N(0,\\sigma_t^2)' : ''},\\qquad T_r=\\frac{1}{PRF}=${formatEngineering(1 / s.repetition.prfHz, 's').replace('µ', '\\mu ')}` });
     parts.push({ label: 'Coherent train spectrum', tex: 'X(f)=P(f)\\sum_{n}e^{-j2\\pi f nT_r}\\ \\Rightarrow\\ \\text{lines every } \\Delta f_{\\text{comb}}=PRF,\\ \\ \\Delta f_{\\text{line}}\\approx\\frac{1}{NT_r}' });
@@ -57,6 +65,17 @@ export default function MathPanel() {
     parts.push({ label: 'Envelope spectrum', tex: e.A });
     parts.push({ label: 'Width ↔ bandwidth', tex: 'B\\propto\\frac{1}{\\tau}\\qquad\\text{(scaling: } a(t/c)\\leftrightarrow |c|\\,A(cf)\\text{)}' });
     if (s.pulse.envelope === 'rect' && s.pulse.edgesEnabled) parts.push({ label: 'Edges', tex: 'B_{\\text{edge}}\\propto\\frac{1}{t_r},\\qquad |X(f)|\\ \\text{falls faster beyond}\\ f\\sim 1/t_r' });
+  }
+  if (code) {
+    const law =
+      s.code.family === 'barker'
+        ? 'c_m\\in\\{0,\\pi\\},\\quad \\text{peak sidelobe }1/L'
+        : s.code.family === 'frank'
+          ? 'c_{iM+j}=\\frac{2\\pi\\,ij}{M},\\quad L=M^2'
+          : 'c_i=\\frac{\\pi i^2}{L}-\\pi i\\quad(\\text{a sampled LFM})';
+    parts.push({ label: 'Phase code', tex: '\\varphi_{\\text{code}}(t)=c_m,\\quad m=\\left\\lfloor\\frac{t+\\tau/2}{T_c}\\right\\rfloor,\\quad T_c=\\frac{\\tau}{L}' });
+    parts.push({ label: 'Code law', tex: law });
+    parts.push({ label: 'Code bandwidth', tex: 'B\\approx\\frac{1}{T_c}=\\frac{L}{\\tau},\\qquad TB\\approx L' });
   }
   if (cm.on) parts.push({ label: 'Modulation property', tex: 'a(t)\\cos(2\\pi f_0t)\\ \\leftrightarrow\\ \\tfrac12\\left[A(f-f_0)+A(f+f_0)\\right]' });
   if (s.chirp.enabled) {
