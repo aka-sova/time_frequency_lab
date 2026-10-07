@@ -39,6 +39,8 @@ export const TOOLTIPS: Record<string, string> = {
   amFreq: 'Modulating frequency f_m.',
   noise: 'Additive white Gaussian noise. Raises a flat floor in the PSD; use the Welch estimator to average it.',
   noiseRms: 'RMS value of the additive noise.',
+  codeFamily: 'Barker: binary 0/π, lengths 2–13, peak sidelobe 1/L. Frank (L = M²) and P4 (any L): polyphase codes with low sidelobes at long lengths; P4 is a sampled linear chirp.',
+  codeLength: 'Number of chips L. Each chip lasts T_c = τ/L, so the bandwidth grows as L/τ and the matched filter compresses the pulse ≈ L times.',
   compressionWeighting: 'Amplitude taper applied to the reference (mismatched filter). Lowers the range sidelobes at the cost of a wider mainlobe and an SNR loss of 10·log₁₀(ENBW).',
   compressionDoppler: 'Doppler shift ν of the received signal relative to the reference (narrowband model: a frequency shift). An LFM peak moves by −ν/k; a phase code loses its peak.',
   samplingMode: 'Auto chooses fₛ and N from the waveform model so the significant spectrum lies within Nyquist. Manual lets you undersample on purpose.',

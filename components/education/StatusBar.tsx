@@ -15,7 +15,9 @@ interface Props {
 /** Context explanation (latest change) + non-intrusive warnings. */
 export default function StatusBar({ explanation, onDismiss, warnings, onFix }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const shown = expanded ? warnings : warnings.slice(0, 2);
+  // Warnings (often with a one-click fix) before informational notes; stable within each level.
+  const ordered = [...warnings.filter((w) => w.level === 'warning'), ...warnings.filter((w) => w.level !== 'warning')];
+  const shown = expanded ? ordered : ordered.slice(0, 2);
   return (
     <div className="border-b border-line bg-panel" aria-live="polite">
       {explanation ? (

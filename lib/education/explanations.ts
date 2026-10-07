@@ -70,6 +70,13 @@ export function explainChange(path: string, prev: unknown, next: unknown, ctx: {
     case 'chirp.startFrequencyHz':
     case 'chirp.endFrequencyHz':
       return { title: 'Chirp', text: 'A linear chirp sweeps the instantaneous frequency across the pulse; the occupied bandwidth becomes ≈ |k|·T, far wider than 1/T. Look at the spectrogram.' };
+    case 'code.enabled':
+    case 'code.family':
+    case 'code.length':
+      return {
+        title: 'Phase code',
+        text: 'Phase steps every T_c = τ/L spread the spectrum to ≈ L/τ while the pulse keeps its length and energy. The matched filter (Pulse compression tab) compresses it back to ≈ T_c.',
+      };
     case 'sampling.sampleRateHz':
       if (dir === 'down' && !ctx.nyquistOk)
         return { title: 'Undersampling', text: 'The physical spectrum has not changed. The digital representation is now undersampling it — components beyond fₛ/2 fold back as aliases.' };

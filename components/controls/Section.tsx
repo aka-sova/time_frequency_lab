@@ -8,7 +8,7 @@ import type { IsolateKey } from '@/lib/presets/isolate';
 import { ISOLATE_LABELS } from '@/lib/presets/isolate';
 import { getPath } from '@/lib/state/path';
 
-export type SectionColor = 'signal' | 'carrier' | 'pulse' | 'train' | 'coherence' | 'jitter' | 'chirp' | 'modulation' | 'sampling';
+export type SectionColor = 'signal' | 'carrier' | 'pulse' | 'train' | 'coherence' | 'jitter' | 'chirp' | 'code' | 'modulation' | 'sampling';
 
 interface SectionProps {
   title: string;

@@ -11,6 +11,7 @@ import { SIGNAL_TYPES } from '@/lib/presets/defaults';
 import { autoSampling, estimateSpectralExtent, resolveSampling } from '@/lib/dsp/sampling';
 import { formatEngineering, formatNumber } from '@/lib/units/format';
 import { carrierModel } from '@/lib/dsp/signals';
+import { BARKER_LENGTHS, barkerPattern, CODE_FAMILIES, FRANK_ORDERS, P4_MAX, P4_MIN, snapCodeLength } from '@/lib/dsp/codes';
 
 const SAMPLE_COUNTS = [256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072];
 
@@ -54,6 +55,7 @@ export default function ControlPanel() {
   const ext = estimateSpectralExtent(s);
   const isTrain = s.pulse.enabled && s.repetition.enabled;
   const tau = s.pulse.widthSec;
+  const codeL = snapCodeLength(s.code.family, s.code.length);
 
   return (
     <div className="pb-6">
@@ -329,6 +331,55 @@ export default function ControlPanel() {
             />
           </>
         ) : null}
+      </Section>
+
+      <Section title="Phase code" color="code" level="advanced" resetKey="code" enablePath="signal.code.enabled" isolateKeys={['code']}>
+        <div className="py-1">
+          <FieldLabel label="Code family" tip="codeFamily" />
+          <div className="mt-0.5">
+            <Segmented
+              size="xs"
+              ariaLabel="Code family"
+              value={s.code.family}
+              options={CODE_FAMILIES.map((f) => ({ value: f.id, label: f.label }))}
+              onChange={(f) =>
+                lab.updateMany([
+                  ['signal.code.family', f],
+                  ['signal.code.length', snapCodeLength(f, s.code.length)],
+                ])
+              }
+            />
+          </div>
+        </div>
+        {s.code.family === 'barker' ? (
+          <SelectField
+            label="Length L"
+            path="signal.code.length"
+            tip="codeLength"
+            disabled={!s.code.enabled}
+            options={BARKER_LENGTHS.map((l) => ({ value: l, label: `${l}   ${barkerPattern(l)}` }))}
+          />
+        ) : s.code.family === 'frank' ? (
+          <SelectField
+            label="Order M (L = M²)"
+            tip="codeLength"
+            disabled={!s.code.enabled}
+            value={Math.round(Math.sqrt(codeL))}
+            onChange={(m) => lab.update('signal.code.length', m * m)}
+            options={FRANK_ORDERS.map((m) => ({ value: m, label: `M = ${m}   (L = ${m * m})` }))}
+          />
+        ) : (
+          <NumberField label="Length L" path="signal.code.length" min={P4_MIN} max={P4_MAX} step={1} integer tip="codeLength" disabled={!s.code.enabled} />
+        )}
+        {s.code.enabled && s.pulse.enabled ? (
+          <>
+            <Readout label={<Tex>{'T_c=\\tau/L'}</Tex>} value={`${formatEngineering(tau / codeL, 's')} (L = ${codeL})`} />
+            <Readout label={<Tex>{'B\\approx 1/T_c,\\ TB\\approx L'}</Tex>} value={`${formatEngineering(codeL / tau, 'Hz')}, TB ≈ ${codeL}`} />
+            {s.code.family === 'barker' ? <Readout label="Expected PSLR = 1/L" value={`${formatNumber(20 * Math.log10(1 / codeL), 3)} dB`} /> : null}
+            <Note>The f_inst overlay shows the carrier and chirp only; the code&rsquo;s phase steps appear in the spectrogram and in the Pulse compression tab.</Note>
+          </>
+        ) : null}
+        {s.code.enabled && !s.pulse.enabled ? <Note>A phase code is applied across the pulse — enable the pulse envelope.</Note> : null}
       </Section>
 
       <Section title="Modulation & noise" color="modulation" level="expert" resetKey="am" defaultOpen={false}>
