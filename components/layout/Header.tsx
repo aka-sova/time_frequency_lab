@@ -126,7 +126,12 @@ export default function Header(p: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-bg px-4 py-2">
       <div className="mr-auto min-w-0">
-        <h1 className="text-[0.9375rem] font-semibold tracking-tight text-ink">Time–Frequency Lab</h1>
+        <h1 className="text-[0.9375rem] font-semibold tracking-tight text-ink">
+          {/* Plain anchor (full load) so the URL-encoded state is dropped and the lab starts fresh. */}
+          <a href="./" className="rounded hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+            Time–Frequency Lab
+          </a>
+        </h1>
         <p className="truncate text-[0.71875rem] text-muted">Explore how waveform structure in time determines spectral structure in frequency.</p>
       </div>
 
