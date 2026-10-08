@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PRESETS } from '@/lib/presets/presets';
-import { buildPresetExperiment, buildCompareExperiment } from '@/lib/presets/apply';
+import { buildPresetExperiment, buildCompareExperiment, compareAfterPreset } from '@/lib/presets/apply';
 import { estimateSpectralExtent, resolveSampling } from '@/lib/dsp/sampling';
 import { analyzeLight } from '@/lib/dsp/analyze';
 import { experimentToQuery, queryToExperiment } from '@/lib/state/url';
@@ -240,5 +240,37 @@ describe('radar & pulse-compression presets', () => {
     expect(Math.abs(10 * Math.log10(a.metrics.referenceSumSq / b.metrics.referenceSumSq))).toBeLessThan(0.01);
     expect(10 * Math.log10(b.metrics.referenceSumSq)).toBeCloseTo(33.01, 1); // σ = 1
     expect(a.metrics.widthSec / b.metrics.widthSec).toBeGreaterThan(60);
+  });
+});
+
+describe('A/B comparison when a preset is loaded', () => {
+  const preset = (id: string) => PRESETS.find((p) => p.id === id)!;
+  const withA = preset('same-energy-detection');
+  const withoutA = preset('barker-13');
+  const mine = setPath(DEFAULT_EXPERIMENT, 'signal.pulse.widthSec', 7e-9);
+
+  it("a preset's own A replaces a previous preset's A silently", () => {
+    const r = compareAfterPreset(preset('uwb-monocycle-power'), { exp: mine, origin: 'preset' });
+    expect(r.compare?.origin).toBe('preset');
+    expect(r.compare?.exp).toEqual(buildCompareExperiment(preset('uwb-monocycle-power')));
+    expect(r.note).toBeNull();
+  });
+  it("a preset's own A replaces an A the user saved, and says so", () => {
+    const r = compareAfterPreset(withA, { exp: mine, origin: 'user' });
+    expect(r.compare?.exp).toEqual(buildCompareExperiment(withA));
+    expect(r.note).toMatch(/replaced/i);
+  });
+  it('an A that came from a preset is cleared when the next preset has none', () => {
+    const r = compareAfterPreset(withoutA, { exp: buildCompareExperiment(withA)!, origin: 'preset' });
+    expect(r.compare).toBeNull();
+    expect(r.note).toMatch(/cleared/i);
+  });
+  it('an A the user saved is kept when the next preset has none', () => {
+    const r = compareAfterPreset(withoutA, { exp: mine, origin: 'user' });
+    expect(r.compare).toEqual({ exp: mine, origin: 'user' });
+    expect(r.note).toBeNull();
+  });
+  it('no A before and none in the preset → none after', () => {
+    expect(compareAfterPreset(withoutA, null)).toEqual({ compare: null, note: null });
   });
 });

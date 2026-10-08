@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Experiment, SignalType, UiMode } from '@/types/signal';
-import { buildCompareExperiment, buildPresetById, buildPresetExperiment, fitFrequencyRange, fitTfRange, fitTimeRange, applyLocks } from '@/lib/presets/apply';
+import { applyLocks, buildPresetById, buildPresetExperiment, compareAfterPreset, fitFrequencyRange, fitTfRange, fitTimeRange, type CompareState } from '@/lib/presets/apply';
 import { getPreset } from '@/lib/presets/presets';
 import { signalTypeTemplate } from '@/lib/presets/defaults';
 import { isolate as isolateExperiment, type IsolateKey } from '@/lib/presets/isolate';
@@ -17,7 +17,7 @@ interface Initial {
   exp: Experiment;
   presetId: string;
   mode: UiMode;
-  compare: Experiment | null;
+  compare: CompareState | null;
   tab: WorkspaceTab;
   explanation: Explanation | null;
 }
@@ -34,7 +34,7 @@ function initialState(): Initial {
           exp: r.experiment,
           presetId: r.presetId,
           mode: r.mode ?? up?.to ?? 'basic',
-          compare: p ? buildCompareExperiment(p) : null,
+          compare: p ? compareAfterPreset(p, null).compare : null,
           tab: p?.tab ?? 'measurements',
           explanation: up ? { title: p && r.presetId !== 'default' ? p.name : 'Configuration', text: up.note } : null,
         };
@@ -60,7 +60,16 @@ export function useLabState() {
   const [locks, setLocks] = useState<string[]>([]);
   const [explanation, setExplanation] = useState<Explanation | null>(init.explanation);
   const [undo, setUndo] = useState<{ exp: Experiment; label: string } | null>(null);
-  const [compare, setCompare] = useState<Experiment | null>(init.compare);
+  // The A side and who put it there (a preset or the user): loading a preset clears only a preset's A.
+  const [cmp, setCmp] = useState<CompareState | null>(init.compare);
+  const cmpRef = useRef(cmp);
+  const setCompareState = useCallback((c: CompareState | null) => {
+    cmpRef.current = c;
+    setCmp(c);
+  }, []);
+  /** User actions (Save as A, swap, clear). */
+  const setCompare = useCallback((e: Experiment | null) => setCompareState(e ? { exp: e, origin: 'user' } : null), [setCompareState]);
+  const compare = cmp?.exp ?? null;
   const [tab, setTab] = useState<WorkspaceTab>(init.tab);
   const expRef = useRef(exp);
   const modeRef = useRef(mode);
@@ -176,13 +185,14 @@ export function useLabState() {
       expRef.current = next;
       setExp(next);
       setPresetId(id);
-      const cmp = buildCompareExperiment(p);
-      if (cmp) setCompare(applyLocks(cmp, next, []));
+      const ab = compareAfterPreset(p, cmpRef.current);
+      setCompareState(ab.compare);
       if (p.tab) setTab(p.tab);
       const up = upgradeModeFor(next, { extra: p.minMode ? [p.minMode] : [] });
-      setExplanation({ title: p.name, text: up ? `${p.description} ${up.note}` : p.description, action: up?.back });
+      const text = [p.description, ab.note, up?.note].filter(Boolean).join(' ');
+      setExplanation({ title: p.name, text, action: up?.back });
     },
-    [locks, remember, upgradeModeFor],
+    [locks, remember, upgradeModeFor, setCompareState],
   );
 
   const fitTime = useCallback(() => {
@@ -245,8 +255,8 @@ export function useLabState() {
     expRef.current = next;
     setExp(next);
     setPresetId('default');
-    setCompare(null);
-  }, [remember]);
+    setCompareState(null);
+  }, [remember, setCompareState]);
 
   const resetToPreset = useCallback(() => {
     remember('Reset to preset');
