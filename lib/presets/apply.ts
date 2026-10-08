@@ -90,3 +90,24 @@ export function buildCompareExperiment(preset: Preset): Experiment | null {
   if (!preset.compareWith) return null;
   return mergeExperiment(DEFAULT_EXPERIMENT, preset.compareWith);
 }
+
+/** Who put the current A side there: a preset's `compareWith`, or the user (Save as A, swap). */
+export type CompareOrigin = 'preset' | 'user';
+
+export interface CompareState {
+  exp: Experiment;
+  origin: CompareOrigin;
+}
+
+/**
+ * The A side after loading `preset`. A preset's own A always replaces the current one. An A that
+ * belonged to the previous preset is cleared when the new preset has none (it would compare two
+ * unrelated lessons); an A the user saved is kept, so presets can be compared against it.
+ * `note` is a sentence for the message bar when the user should know what happened to A.
+ */
+export function compareAfterPreset(preset: Preset, current: CompareState | null): { compare: CompareState | null; note: string | null } {
+  const own = buildCompareExperiment(preset);
+  if (own) return { compare: { exp: own, origin: 'preset' }, note: current?.origin === 'user' ? 'Your saved A was replaced by this preset’s A side.' : null };
+  if (current?.origin === 'preset') return { compare: null, note: 'The previous preset’s A/B comparison was cleared.' };
+  return { compare: current, note: null };
+}
